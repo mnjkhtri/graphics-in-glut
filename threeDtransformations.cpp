@@ -268,6 +268,16 @@ void DoviewMatrix(tMatrix *ourViewMatrix, tCoord *vertices, int noOfVertices)
     }
 }
 
+void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfVertices)
+{
+    for (int i = 0; i < noOfVertices; ++i)
+    {
+        vertices[i].x += tx;
+        vertices[i].y += ty;
+        vertices[i].z += tz;
+    }
+}
+
 void DocabinetMatrix(float phi, tCoord *vertices, int noOfVertices)
 {
     float sint = sin((3.14*(float)phi)/180.0);
@@ -296,13 +306,28 @@ void DocavalierMatrix(float phi, tCoord *vertices, int noOfVertices)
     }
 }
 
-void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfVertices)
+void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices)
 {
-    for (int i = 0; i < noOfVertices; ++i)
+    float xwmin = 0;
+    float ywmin = 0;
+    float xwmax = 100;
+    float ywmax = 100;
+
+    float xrp = vanishpoint->x;
+    float yrp = vanishpoint->y;
+    float zrp = vanishpoint->z;
+
+    float a = -(xrp-0.5*(xwmin+xwmax))/zrp;
+    float b = -(yrp-0.5*(ywmin+ywmax))/zrp;
+
+    for (int k = 0; k < noOfVertices; ++k)
     {
-        vertices[i].x += tx;
-        vertices[i].y += ty;
-        vertices[i].z += tz;
+        float xd = vertices[k].x+a*(vertices[k].z-zrp);
+        float yd = vertices[k].y+b*(vertices[k].z-zrp);
+        float xp = (xd*zrp-xrp*vertices[k].z)/(zrp-vertices[k].z);
+        float yp = (yd*zrp-yrp*vertices[k].z)/(zrp-vertices[k].z);
+        vertices[k].x = xp;
+        vertices[k].y = yp;
     }
 }
 
