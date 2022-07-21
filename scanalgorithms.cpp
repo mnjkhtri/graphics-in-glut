@@ -1,6 +1,6 @@
 #include <GL/glut.h>
 #include <iostream>
-#include "scanalgorithms.hpp"
+#include "includes/scanalgorithms.hpp"
 
 void putPixel(int x, int y)
 {

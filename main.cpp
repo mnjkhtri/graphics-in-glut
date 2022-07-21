@@ -1,15 +1,15 @@
 #include <GL/glut.h>
 #include <stdio.h>
-#include "scanalgorithms.hpp"
-#include "twoDtransformations.hpp"
-#include "threeDtransformations.hpp"
-#include "coordinates.hpp"
+#include "includes/scanalgorithms.hpp"
+#include "includes/twoDtransformations.hpp"
+#include "includes/threeDtransformations.hpp"
+#include "includes/coordinates.hpp"
 #include <iostream>
 void render()
 {
    glClear(GL_COLOR_BUFFER_BIT);
    
-   tCoord reference(5,0,0);
+   tCoord reference(0,0,3);
    tCoord Nvector(1,0,0);
    tCoord Vvector(0,1,0);
    tMatrix ourViewMatrix;
