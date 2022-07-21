@@ -9,12 +9,12 @@ void render()
 {
    glClear(GL_COLOR_BUFFER_BIT);
    
-   tCoord reference(0,0,3);
-   tCoord Nvector(1,0,0);
+   tCoord reference(0,0,0);
+   tCoord Nvector(0,0,1);
    tCoord Vvector(0,1,0);
    tMatrix ourViewMatrix;
    viewMatrix(&ourViewMatrix, &reference, &Nvector, &Vvector);
-
+   ourViewMatrix.show();
    //Coordinates of a cube (will act as a buffer)
    const int COUNT = 16;
    tCoord coordinates1[] = 
@@ -25,8 +25,10 @@ void render()
       tCoord(0,100,0), tCoord(0,100,100), tCoord(100,100,100),
    };
    DoviewMatrix(&ourViewMatrix, coordinates1, COUNT);
-   DocabinetMatrix(30, coordinates1, COUNT);
-   DoTranslateMatrix(200,100,100, coordinates1, COUNT);
+   //DocabinetMatrix(45, coordinates1, COUNT);
+
+   tCoord vanishpoint(150,100,-100);
+   DoperspectiveMatrix(&vanishpoint, coordinates1, COUNT);
    Plotvertices(coordinates1, COUNT);
 
    tCoord coordinates2[] = 
@@ -37,9 +39,10 @@ void render()
       tCoord(0,100,0), tCoord(0,100,100), tCoord(100,100,100),
    };
    DoTranslateMatrix(0,100,0, coordinates2, COUNT);
+
    DoviewMatrix(&ourViewMatrix, coordinates2, COUNT);
-   DocabinetMatrix(30, coordinates2, COUNT);
-   DoTranslateMatrix(200,100,100, coordinates2, COUNT);
+   //DocabinetMatrix(45, coordinates1, COUNT);
+   DoperspectiveMatrix(&vanishpoint, coordinates2, COUNT);
    Plotvertices(coordinates2, COUNT);
 
    tCoord coordinates3[] = 
@@ -50,23 +53,11 @@ void render()
       tCoord(0,100,0), tCoord(0,100,100), tCoord(100,100,100),
    };
    DoTranslateMatrix(0,200,0, coordinates3, COUNT);
-   DoviewMatrix(&ourViewMatrix, coordinates3, COUNT);
-   DocabinetMatrix(30, coordinates3, COUNT);
-   DoTranslateMatrix(200,100,100, coordinates3, COUNT);
-   Plotvertices(coordinates3, COUNT);
 
-   tCoord coordinates4[] = 
-   {
-      tCoord(0,0,0), tCoord(0,0,100), tCoord(0,100,100), tCoord(0,100,0), tCoord(0,0,0),
-      tCoord(100,0,0), tCoord(100,0,100), tCoord(0,0,100), tCoord(100,0,100),
-      tCoord(100,100,100), tCoord(100,100,0), tCoord(100,0,0), tCoord(100,100,0),
-      tCoord(0,100,0), tCoord(0,100,100), tCoord(100,100,100),
-   };
-   DoTranslateMatrix(0,300,0, coordinates4, COUNT);
-   DoviewMatrix(&ourViewMatrix, coordinates4, COUNT);
-   DocabinetMatrix(30, coordinates4, COUNT);
-   DoTranslateMatrix(200,100,100, coordinates4, COUNT);
-   Plotvertices(coordinates4, COUNT);
+   DoviewMatrix(&ourViewMatrix, coordinates3, COUNT);
+   //DocabinetMatrix(45, coordinates1, COUNT);
+   DoperspectiveMatrix(&vanishpoint, coordinates3, COUNT);
+   Plotvertices(coordinates3, COUNT);
 }
 
 void Init()

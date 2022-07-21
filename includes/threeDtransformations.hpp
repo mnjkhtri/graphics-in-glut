@@ -49,6 +49,8 @@ void DocabinetMatrix(float phi, tCoord *vertices, int noOfVertices);
 
 void DocavalierMatrix(float phi, tCoord *vertices, int noOfVertices);
 
+void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices);
+
 void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfVertices);
 
 void Plotvertices(tCoord *coordinates, int COUNT);
