@@ -10,8 +10,13 @@ class tCoord
         float y;
         float z;
         float h;
+		tCoord(){}
         tCoord(float, float, float);
         tCoord(float, float, float, float);
+		tCoord operator* (tCoord);
+		tCoord operator* (float);
+		tCoord operator + (tCoord);
+		tCoord operator - (tCoord);
         void show();
 };
 
@@ -54,6 +59,5 @@ void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices
 void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfVertices);
 
 void Plotvertices(tCoord *coordinates, int COUNT);
-
 
 #endif

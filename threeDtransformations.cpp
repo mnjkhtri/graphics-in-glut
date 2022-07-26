@@ -1,3 +1,4 @@
+#include <GL/gl.h>
 #include <GL/glut.h>
 #include "includes/threeDtransformations.hpp"
 #include <cmath>
@@ -22,6 +23,50 @@ tCoord::tCoord(float _x, float _y, float _z, float _h)
 void tCoord::show()
 {
     cout << x << " " << y << " " << z << endl;
+}
+
+tCoord tCoord::operator + (tCoord t)
+{
+   tCoord temp;
+
+   temp.x = x + t.x;
+   temp.y = y + t.y;
+   temp.z = z + t.z;
+
+   return temp;
+}
+
+tCoord tCoord::operator * (tCoord t)
+{
+	tCoord temp;
+
+	temp.x = x * t.x;
+	temp.y = y * t.y;
+	temp.z = z * t.z;
+
+	return temp;
+}
+
+tCoord tCoord::operator*(float a)
+{
+	tCoord temp;
+
+	temp.x = x * a;
+	temp.y = y * a;
+	temp.z = z * a;
+
+	return temp;
+}
+
+tCoord tCoord::operator-(tCoord t)
+{
+	tCoord temp;
+
+	temp.x = x - t.x;
+	temp.y = y - t.y;
+	temp.z = z - t.z;
+
+	return temp;
 }
 
 tMatrix::tMatrix()
@@ -333,8 +378,16 @@ void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices
 
 void Plotvertices(tCoord *coordinates, int COUNT)
 {
-    for (int i = 0; i < COUNT-1; ++i)
+    for (int i = 0; i < COUNT-1; i=i+3)
     {
-        LineDDA(Coord(coordinates[i].x, coordinates[i].y), Coord(coordinates[i+1].x, coordinates[i+1].y));
+		//cout<<coordinates[i].x<<"  "<<coordinates[i].y<<" "<<coordinates[i+1].x<<" "<<coordinates[i+1].y<<endl;
+     //   LineDDA(Coord(coordinates[i].x, coordinates[i].y), Coord(coordinates[i+1].x, coordinates[i+1].y));
+	//	LineDDA(Coord(coordinates[i+1].x, coordinates[i+1].y), Coord(coordinates[i+2].x, coordinates[i+2].y));
+	//	LineDDA(Coord(coordinates[i+2].x, coordinates[i+2].y), Coord(coordinates[i].x, coordinates[i].y));
+	    RasterizeTriangle(coordinates[i].x, coordinates[i].y, coordinates[i+1].x, coordinates[i+1].y, coordinates[i+2].x,coordinates[i+2].y);
+
+
     }
 }
+
+
