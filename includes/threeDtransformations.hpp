@@ -1,6 +1,8 @@
 #ifndef THREE_INCLUDED
 #define THREE_INCLUDED
 
+#include<bits/stdc++.h>
+
 #include "twoDtransformations.hpp"
 #include "scanalgorithms.hpp"
 class tCoord
@@ -13,10 +15,12 @@ class tCoord
 		tCoord(){}
         tCoord(float, float, float);
         tCoord(float, float, float, float);
-		tCoord operator* (tCoord);
+		float dot(tCoord);
 		tCoord operator* (float);
 		tCoord operator + (tCoord);
 		tCoord operator - (tCoord);
+		tCoord cross(tCoord);
+		void normalize();
         void show();
 };
 
@@ -58,6 +62,11 @@ void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices
 
 void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfVertices);
 
-void Plotvertices(tCoord *coordinates, int COUNT);
+//void Dozbuffer(std::vector<bool>& zbuffer,tCoord* coordinates, int noOfVertices,tCoord cameraPosition = tCoord(0,0,0));
+
+std::vector<bool> Dozbuffer(tCoord* coordinates, int noOfVertices,tCoord cameraPosition = tCoord(0,0,0));
+
+void Plotvertices(tCoord *coordinates,std::vector<bool>& zbuffer, int COUNT);
+
 
 #endif

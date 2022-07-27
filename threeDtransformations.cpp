@@ -36,15 +36,13 @@ tCoord tCoord::operator + (tCoord t)
    return temp;
 }
 
-tCoord tCoord::operator * (tCoord t)
+float tCoord::dot(tCoord t)
 {
-	tCoord temp;
+    float product;	
 
-	temp.x = x * t.x;
-	temp.y = y * t.y;
-	temp.z = z * t.z;
+	product = x*t.x + y*t.y + z*t.z;
 
-	return temp;
+	return product;
 }
 
 tCoord tCoord::operator*(float a)
@@ -67,6 +65,27 @@ tCoord tCoord::operator-(tCoord t)
 	temp.z = z - t.z;
 
 	return temp;
+}
+
+tCoord tCoord::cross(tCoord vec2)
+{
+	tCoord temp;
+
+	temp.x = y * vec2.z - vec2.y * z ;
+    temp.y = -x * vec2.z + vec2.x * z;
+	temp.z = x * vec2.y - vec2.x * y ;
+
+	return temp;
+}
+
+void tCoord::normalize()
+{
+  float length = sqrtf(x*x + y*y + z*z);
+  
+  x/=length; 
+  y/=length; 
+  z/=length;
+
 }
 
 tMatrix::tMatrix()
@@ -376,16 +395,60 @@ void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices
     }
 }
 
-void Plotvertices(tCoord *coordinates, int COUNT)
+std::vector<bool> Dozbuffer(tCoord* coordinates, int noOfVertices,tCoord cameraPosition)
 {
-    for (int i = 0; i < COUNT-1; i=i+3)
+   std::vector<bool> zbuffer;
+   for (int i=0;i< noOfVertices -1; i=i+3)
+   {
+	   tCoord vec1, vec2, normal, direction,temp ;
+	   float product;
+
+	   vec1 = coordinates[i+1] - coordinates[i];
+	   vec2 = coordinates[i+2] - coordinates[i];
+
+	   normal = vec1.cross(vec2); 
+	   normal.normalize();
+
+	   temp=coordinates[i];
+	   temp.normalize();
+	   direction = temp - cameraPosition;
+
+
+	   product = normal.dot(direction);
+	   
+
+	   std::cout<<product<<endl<<endl;
+
+	   if (product<=0.0f)
+	   //if(normal.z<0.0f)
+		   zbuffer.push_back(true);
+	   else
+		   zbuffer.push_back(false);
+
+   }
+   
+   for (auto b:zbuffer)
+   {
+	std::cout<<b<<endl;	
+   }
+   return zbuffer;
+}
+
+void Plotvertices(tCoord *coordinates,std::vector<bool> &zbuffer, int COUNT)
+{
+    for (int i = 0,k=0; i < COUNT-1; i=i+3,++k)
     {
 		//cout<<coordinates[i].x<<"  "<<coordinates[i].y<<" "<<coordinates[i+1].x<<" "<<coordinates[i+1].y<<endl;
-     //   LineDDA(Coord(coordinates[i].x, coordinates[i].y), Coord(coordinates[i+1].x, coordinates[i+1].y));
-	//	LineDDA(Coord(coordinates[i+1].x, coordinates[i+1].y), Coord(coordinates[i+2].x, coordinates[i+2].y));
-	//	LineDDA(Coord(coordinates[i+2].x, coordinates[i+2].y), Coord(coordinates[i].x, coordinates[i].y));
-	    RasterizeTriangle(coordinates[i].x, coordinates[i].y, coordinates[i+1].x, coordinates[i+1].y, coordinates[i+2].x,coordinates[i+2].y);
 
+		if (zbuffer[k])
+		{
+	    //	RasterizeTriangle(coordinates[i].x, coordinates[i].y, coordinates[i+1].x, coordinates[i+1].y, coordinates[i+2].x,coordinates[i+2].y);
+
+			LineDDA(Coord(coordinates[i].x, coordinates[i].y), Coord(coordinates[i+1].x, coordinates[i+1].y));
+			LineDDA(Coord(coordinates[i+1].x, coordinates[i+1].y), Coord(coordinates[i+2].x, coordinates[i+2].y));
+			LineDDA(Coord(coordinates[i+2].x, coordinates[i+2].y), Coord(coordinates[i].x, coordinates[i].y));
+		}
+	    
 
     }
 }

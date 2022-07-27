@@ -17,7 +17,7 @@ void render()
 {
    glClear(GL_COLOR_BUFFER_BIT);
    
-   tCoord reference(0,0,0);
+   tCoord reference(10,50,-10);
    tCoord Nvector(0,0,1);
    tCoord Vvector(0,1,0);
    tMatrix ourViewMatrix;
@@ -49,12 +49,16 @@ void render()
          };
 
    DoviewMatrix(&ourViewMatrix, coordinates1, COUNT);
-   DocabinetMatrix(45, coordinates1, COUNT);
+//   DocabinetMatrix(45, coordinates1, COUNT);
 
+ // zbuffer=Dozbuffer( coordinates1, COUNT,reference);
    tCoord vanishpoint(150,300,-150);
+   DoperspectiveMatrix(&vanishpoint, coordinates1, COUNT);
 
-  DoperspectiveMatrix(&vanishpoint, coordinates1, COUNT);
-   Plotvertices(coordinates1, COUNT);
+	std::vector<bool> zbuffer;
+  	zbuffer=Dozbuffer( coordinates1, COUNT,reference);
+
+	Plotvertices(coordinates1,zbuffer, COUNT);
 
    tCoord coordinates2[] = 
    {
