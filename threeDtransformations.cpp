@@ -420,8 +420,8 @@ void DoperspectiveMatrix(tCoord *vanishpoint, cube& mesh)
 {
     float xwmin = 0;
     float ywmin = 0;
-    float xwmax = 100;
-    float ywmax = 100;
+    float xwmax = 500;
+    float ywmax = 500;
 
     float xrp = vanishpoint->x;
     float yrp = vanishpoint->y;
@@ -456,12 +456,12 @@ void DoperspectiveMatrix(tCoord *vanishpoint, cube& mesh)
     }
 }
 
-std::vector<bool> Dozbuffer(cube& mesh,tCoord cameraPosition)
+std::vector<bool> Dozbuffer(cube& mesh, tCoord cameraPosition)
 {
    std::vector<bool> zbuffer;
    for (auto& tr:mesh.triangles)
    {
-	   tCoord vec1, vec2, normal, direction,temp ;
+	   tCoord vec1, vec2, normal, direction, temp ;
 	   float product;
 
 	   vec1 = tr.tri[1] - tr.tri[0];
@@ -474,25 +474,19 @@ std::vector<bool> Dozbuffer(cube& mesh,tCoord cameraPosition)
 	   temp.normalize();
 	   direction = temp - cameraPosition;
 
-
 	   product = normal.dot(direction);
 	   
-
-
 	   if (product<=0.0f)
 	   //if(normal.z<0.0f)
 		   zbuffer.push_back(true);
 	   else
 		   zbuffer.push_back(false);
-
    }
-   
    return zbuffer;
 }
 
-void Plotvertices(cube& mesh,std::vector<bool> &zbuffer)
+void Plotvertices(cube& mesh, std::vector<bool> &zbuffer)
 {
-
 	int k =0;
     for (auto& tr:mesh.triangles)
     {
@@ -507,8 +501,6 @@ void Plotvertices(cube& mesh,std::vector<bool> &zbuffer)
 			LineDDA(Coord(tr.tri[2].x, tr.tri[2].y), Coord(tr.tri[0].x, tr.tri[0].y));
 		}
 		++k;
-	    
-
     }
 }
 

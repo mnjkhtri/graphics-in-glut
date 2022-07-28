@@ -8,9 +8,13 @@
 #define SCREEN_W 1000
 #define SCREEN_H 1000
 
-tCoord reference(0,0,-10);
+int default_x = 0;
+int default_y = 0;
+int default_z = -10;
+tCoord reference(default_x,default_y,default_z);
 tCoord Nvector(0,0,1);
 tCoord Vvector(0,1,0);
+tCoord vanishpoint(550,250,-500);
 
 /*
 1) OpenGL takes in 3D coordinates and transfroms them into 2D pixels through the process of pipelining.
@@ -178,7 +182,7 @@ int main()
     // glBindVertexArray(0);
 
 
-	cube cubes,cubes1;
+	cube cubes;
     cubes.triangles= 
     {
 		{tCoord(0,0,0), tCoord(0,100,0), tCoord(100,100,0)},
@@ -199,7 +203,20 @@ int main()
 		{tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0)},
 		{tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)}
     };
-    
+
+    // cube cubes;
+    // cubes.triangles =
+    // {
+    //     {tCoord(0,0,0), tCoord(0,0,100), tCoord(100,0,100)},
+	// 	{tCoord(0,0,0), tCoord(100,0,100), tCoord(100,0,0)},   
+
+    //     {tCoord(0,0,0), tCoord(100,0,0), tCoord(50,100,50)},   
+    //     {tCoord(0,0,0), tCoord(0,0,100), tCoord(50,100,50)},   
+    //     {tCoord(100,0,0), tCoord(100,0,100), tCoord(50,100,50)},   
+    //     {tCoord(0,0,100), tCoord(100,0,100), tCoord(50,100,50)},   
+    // };
+
+    //RESULT = CUBE + PYRAMID
     //THE REFERENCE, NVECTOR AND VVECTOR ARE NOW GLOBAL
 
     Angel::init(SCREEN_W, SCREEN_H);
@@ -213,20 +230,18 @@ int main()
         
         //Make temporary copy of the coordinates:
 
-		cubes1 = cubes;
+		cube cubes_temp = cubes;
         //Make a view matrix:
         tMatrix ourViewMatrix;
         viewMatrix(&ourViewMatrix, &reference, &Nvector, &Vvector);
-        DoviewMatrix(&ourViewMatrix, cubes1);
 
-        tCoord vanishpoint(250,250,-200);
-        DoperspectiveMatrix(&vanishpoint, cubes1);
-        //DocabinetMatrix(45, coordinates1, COUNT);
-
+        DoviewMatrix(&ourViewMatrix, cubes_temp);
+        DoperspectiveMatrix(&vanishpoint, cubes_temp);
+        //DocabinetMatrix(45, cubes_temp);
 	    std::vector<bool> zbuffer;
-  	    zbuffer = Dozbuffer(cubes1, reference);
+  	    zbuffer = Dozbuffer(cubes_temp, vanishpoint);
 
-	    Plotvertices(cubes1, zbuffer );
+	    Plotvertices(cubes_temp, zbuffer);
 
         //MAIN ENDS HERE
         
@@ -252,23 +267,33 @@ void processInput(GLFWwindow *window)
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        reference.z += 10;
-        if (reference.z >= 5)
-        {
-            reference.z = 0;
-        }
+        reference.z += 5;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        reference.z -= 10;
+        reference.z -= 5;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        reference.x += 10;
+        reference.x += 5;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        reference.x -= 10;
+        reference.x -= 5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        reference.y += 5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        reference.y -= 5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    {
+        reference.x = default_x;
+        reference.y = default_y;
+        reference.y = default_z;
     }
 }
 
