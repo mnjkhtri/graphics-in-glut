@@ -62,6 +62,7 @@ void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices
 
 void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfVertices);
 
+void DoRotateMatrix(float theta, tCoord axis, tCoord *vertices, int noOfVertices);
 //void Dozbuffer(std::vector<bool>& zbuffer,tCoord* coordinates, int noOfVertices,tCoord cameraPosition = tCoord(0,0,0));
 
 std::vector<bool> Dozbuffer(tCoord* coordinates, int noOfVertices,tCoord cameraPosition = tCoord(0,0,0));
