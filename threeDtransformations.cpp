@@ -417,7 +417,6 @@ std::vector<bool> Dozbuffer(tCoord* coordinates, int noOfVertices,tCoord cameraP
 	   product = normal.dot(direction);
 	   
 
-	   std::cout<<product<<endl<<endl;
 
 	   if (product<=0.0f)
 	   //if(normal.z<0.0f)
@@ -427,10 +426,6 @@ std::vector<bool> Dozbuffer(tCoord* coordinates, int noOfVertices,tCoord cameraP
 
    }
    
-   for (auto b:zbuffer)
-   {
-	std::cout<<b<<endl;	
-   }
    return zbuffer;
 }
 
