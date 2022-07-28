@@ -342,6 +342,16 @@ void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfV
     }
 }
 
+void DoRotateMatrix(float theta, tCoord axis, tCoord *vertices, int noOfVertices)
+{
+    tMatrix unit_test;
+    trotateMatrix(&unit_test, theta, axis);
+    for (int i = 0; i < noOfVertices; ++i)
+    {
+        tdoTransform(vertices+i, &unit_test);
+    }
+}
+
 void DocabinetMatrix(float phi, tCoord *vertices, int noOfVertices)
 {
     float sint = sin((3.14*(float)phi)/180.0);
@@ -437,7 +447,7 @@ void Plotvertices(tCoord *coordinates,std::vector<bool> &zbuffer, int COUNT)
 
 		if (zbuffer[k])
 		{
-	    //	RasterizeTriangle(coordinates[i].x, coordinates[i].y, coordinates[i+1].x, coordinates[i+1].y, coordinates[i+2].x,coordinates[i+2].y);
+	        RasterizeTriangle(coordinates[i].x, coordinates[i].y, coordinates[i+1].x, coordinates[i+1].y, coordinates[i+2].x,coordinates[i+2].y);
 
 			LineDDA(Coord(coordinates[i].x, coordinates[i].y), Coord(coordinates[i+1].x, coordinates[i+1].y));
 			LineDDA(Coord(coordinates[i+1].x, coordinates[i+1].y), Coord(coordinates[i+2].x, coordinates[i+2].y));

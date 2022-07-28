@@ -1,14 +1,8 @@
 #include <GL/glut.h>
 #include <iostream>
 #include "includes/scanalgorithms.hpp"
+#include "includes/Angel.hpp"
 
-void putPixel(int x, int y)
-{
-    glBegin(GL_POINTS);
-    glVertex2i(x,y);
-    glEnd();
-    glFlush();  
-}
 int round(float x)
 {
     return int(x+0.5);
@@ -33,7 +27,7 @@ void LineDDA(Coord first, Coord second)
     float y = yy;
     for (int i = 0; i <= steps; i++)
     {
-        putPixel (round(x),round(y));
+        Angel::putPixel(round(x),round(y), 1, Color(1.0f, 0.0f, 0.0f, 1.0f));
         x += xinc;
         y += yinc;
     }
@@ -57,7 +51,7 @@ void LineBresenham(Coord first, Coord second)
     int par;
     int x = x1;
     int y = yy;
-    putPixel(x,y);
+    Angel::putPixel(x,y);
     if (m <= 1)
     {
         //The lower part of the quandrant
@@ -77,7 +71,7 @@ void LineBresenham(Coord first, Coord second)
                 par += twoDyDx;
                 y += 1;
             }
-            putPixel(x,y);
+            Angel::putPixel(x,y);
         }
     }
     if (m > 1)
@@ -95,14 +89,14 @@ void Circle(Coord center, int r)
     int y = r;
     int p = 1-r;
 
-    putPixel(xr+x,yr+y);
-    putPixel(xr+x,yr-y);
-    putPixel(xr-x,yr+y);
-    putPixel(xr-x,yr-y);
-    putPixel(xr+y,yr+x);
-    putPixel(xr+y,yr-x);
-    putPixel(xr-y,yr+x);
-    putPixel(xr-y,yr-x);
+    Angel::putPixel(xr+x,yr+y);
+    Angel::putPixel(xr+x,yr-y);
+    Angel::putPixel(xr-x,yr+y);
+    Angel::putPixel(xr-x,yr-y);
+    Angel::putPixel(xr+y,yr+x);
+    Angel::putPixel(xr+y,yr-x);
+    Angel::putPixel(xr-y,yr+x);
+    Angel::putPixel(xr-y,yr-x);
     while (x < y)
     {
         x += 1;
@@ -115,14 +109,14 @@ void Circle(Coord center, int r)
             y -= 1;
             p += 2*(x-y)+1;
         }
-        putPixel(xr+x,yr+y);
-        putPixel(xr+x,yr-y);
-        putPixel(xr-x,yr+y);
-        putPixel(xr-x,yr-y);
-        putPixel(xr+y,yr+x);
-        putPixel(xr+y,yr-x);
-        putPixel(xr-y,yr+x);
-        putPixel(xr-y,yr-x);
+        Angel::putPixel(xr+x,yr+y);
+        Angel::putPixel(xr+x,yr-y);
+        Angel::putPixel(xr-x,yr+y);
+        Angel::putPixel(xr-x,yr-y);
+        Angel::putPixel(xr+y,yr+x);
+        Angel::putPixel(xr+y,yr-x);
+        Angel::putPixel(xr-y,yr+x);
+        Angel::putPixel(xr-y,yr-x);
     }
 }
 //All ellipses
@@ -138,10 +132,10 @@ void Ellipse(Coord center, int rx, int ry)
     int y = ry;
     int px = 0;
     int py = tworx2*y;
-    putPixel(xr+x,yr+y);
-    putPixel(xr+x,yr-y);
-    putPixel(xr-x,yr+y);
-    putPixel(xr-x,yr-y);
+    Angel::putPixel(xr+x,yr+y);
+    Angel::putPixel(xr+x,yr-y);
+    Angel::putPixel(xr-x,yr+y);
+    Angel::putPixel(xr-x,yr-y);
 
     int p = round(ry2-(rx2*ry)+(0.25*rx2));
     
@@ -159,10 +153,10 @@ void Ellipse(Coord center, int rx, int ry)
             py -= tworx2;
             p += ry2+px-py;
         }
-        putPixel(xr+x,yr+y);
-        putPixel(xr+x,yr-y);
-        putPixel(xr-x,yr+y);
-        putPixel(xr-x,yr-y);
+        Angel::putPixel(xr+x,yr+y);
+        Angel::putPixel(xr+x,yr-y);
+        Angel::putPixel(xr-x,yr+y);
+        Angel::putPixel(xr-x,yr-y);
     }
 
     p = round(ry2*(x+0.5)*(x+0.5)+rx2*(y-1)*(y-1)-rx2*ry2);
@@ -180,10 +174,10 @@ void Ellipse(Coord center, int rx, int ry)
             px += twory2;
             p += rx2-py+px;
         }
-        putPixel(xr+x,yr+y);
-        putPixel(xr+x,yr-y);
-        putPixel(xr-x,yr+y);
-        putPixel(xr-x,yr-y);
+        Angel::putPixel(xr+x,yr+y);
+        Angel::putPixel(xr+x,yr-y);
+        Angel::putPixel(xr-x,yr+y);
+        Angel::putPixel(xr-x,yr-y);
     }
 }
 //Need vertices in order
@@ -199,7 +193,7 @@ void Square(Coord first, Coord second, Coord third, Coord forth)
 void RasterizeTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
 	{
 		auto SWAP = [](int &x, int &y) { int t = x; x = y; y = t; };
-		auto drawline = [&](int sx, int ex, int ny) { for (int i = sx; i <= ex; i++) putPixel(i, ny); };
+		auto drawline = [&](int sx, int ex, int ny) { for (int i = sx; i <= ex; i++) Angel::putPixel(i, ny); };
 		
 		int t1x, t2x, y, minx, maxx, t1xp, t2xp;
 		bool changed1 = false;
