@@ -24,6 +24,16 @@ class tCoord
         void show();
 };
 
+struct triangle 
+{
+	tCoord tri[3];
+};
+
+struct cube
+{
+	std::vector<triangle> triangles;
+};
+
 class tMatrix
 {
     public:
@@ -48,26 +58,34 @@ void toriginscaleMatrix(tMatrix* ourMatrix, float sx, float sy, float sz);
 
 void tpivotscaleMatrix(tMatrix* ourMatrix, float sx, float sy, float sz, tCoord pivot);
 
-void tdoTransform(tCoord* arr, tMatrix* ourMatrix);
+//void tdoTransform(tCoord* arr, tMatrix* ourMatrix);
+void tdoTransform(tCoord& arr, tMatrix* ourMatrix);
 
 void viewMatrix(tMatrix *unitMatrix, tCoord *reference, tCoord *Nvector, tCoord *Vvector);
 
-void DoviewMatrix(tMatrix *ourViewMatrix, tCoord *vertices, int noOfVertices);
+//void DoviewMatrix(tMatrix *ourViewMatrix, tCoord *vertices, int noOfVertices);
+void DoviewMatrix(tMatrix *ourViewMatrix, cube& mesh );
 
-void DocabinetMatrix(float phi, tCoord *vertices, int noOfVertices);
+//void DocabinetMatrix(float phi, tCoord *vertices, int noOfVertices);
+void DocabinetMatrix(float phi, cube& mesh);
 
-void DocavalierMatrix(float phi, tCoord *vertices, int noOfVertices);
+//void DocavalierMatrix(float phi, tCoord *vertices, int noOfVertices);
+void DocavalierMatrix(float phi, cube& mesh);
 
-void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices);
+//void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices);
+void DoperspectiveMatrix(tCoord *vanishpoint, cube& mesh);
 
-void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfVertices);
+//void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfVertices);
+void DoTranslateMatrix(float tx, float ty, float tz, cube &mesh);
 
-void DoRotateMatrix(float theta, tCoord axis, tCoord *vertices, int noOfVertices);
-//void Dozbuffer(std::vector<bool>& zbuffer,tCoord* coordinates, int noOfVertices,tCoord cameraPosition = tCoord(0,0,0));
+//void DoRotateMatrix(float theta, tCoord axis, tCoord *vertices, int noOfVertices);
+void DoRotateMatrix(float theta, tCoord axis,cube& mesh );
 
-std::vector<bool> Dozbuffer(tCoord* coordinates, int noOfVertices,tCoord cameraPosition = tCoord(0,0,0));
+//std::vector<bool> Dozbuffer(tCoord* coordinates, int noOfVertices,tCoord cameraPosition = tCoord(0,0,0));
+std::vector<bool> Dozbuffer(cube& mesh,tCoord cameraPosition=tCoord(0,0,0));
 
-void Plotvertices(tCoord *coordinates,std::vector<bool>& zbuffer, int COUNT);
+//void Plotvertices(tCoord *coordinates,std::vector<bool>& zbuffer, int COUNT);
+void Plotvertices(cube& mesh,std::vector<bool> &zbuffer);
 
 
 #endif

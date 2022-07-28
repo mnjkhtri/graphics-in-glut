@@ -1,10 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
-#include "scanalgorithms.hpp"
-#include "threeDtransformations.hpp"
-#include "twoDtransformations.hpp"
-#include "Angel.hpp"
+#include "includes/scanalgorithms.hpp"
+#include "includes/threeDtransformations.hpp"
+#include "includes/twoDtransformations.hpp"
+#include "includes/Angel.hpp"
 #define SCREEN_W 1000
 #define SCREEN_H 1000
 
@@ -178,26 +178,26 @@ int main()
     // glBindVertexArray(0);
 
 
-    const int COUNT = 36;
-    tCoord coordinates[] = 
+	cube cubes,cubes1;
+    cubes.triangles= 
     {
-        tCoord(0,0,0), tCoord(0,100,0), tCoord(100,100,0),
-        tCoord(0,0,0), tCoord(100,100,0), tCoord(100,0,0),
+		{tCoord(0,0,0), tCoord(0,100,0), tCoord(100,100,0)},
+		{tCoord(0,0,0), tCoord(100,100,0), tCoord(100,0,0)},
 
-        tCoord(100,0,0), tCoord(100,100,0), tCoord(100,100,100),
-        tCoord(100,0,0), tCoord(100,100,100), tCoord(100,0,100),
+		{tCoord(100,0,0), tCoord(100,100,0), tCoord(100,100,100)},
+		{tCoord(100,0,0), tCoord(100,100,100), tCoord(100,0,100)},
 
-        tCoord(100,0,100), tCoord(100,100,100), tCoord(0,100,100),
-        tCoord(100,0,100), tCoord(0,100,100), tCoord(0,0,100),
+		{tCoord(100,0,100), tCoord(100,100,100), tCoord(0,100,100)},
+		{tCoord(100,0,100), tCoord(0,100,100), tCoord(0,0,100)},
 
-        tCoord(0,0,100), tCoord(0,100,100), tCoord(0,100,0),
-        tCoord(0,0,100), tCoord(0,100,0), tCoord(0,0,0),
+		{tCoord(0,0,100), tCoord(0,100,100), tCoord(0,100,0)},
+		{tCoord(0,0,100), tCoord(0,100,0), tCoord(0,0,0)},
 
-        tCoord(0,100,0), tCoord(0,100,100), tCoord(100,100,100),
-        tCoord(0,100,0), tCoord(100,100,100), tCoord(100,100,0),
+		{tCoord(0,100,0), tCoord(0,100,100), tCoord(100,100,100)},
+		{tCoord(0,100,0), tCoord(100,100,100), tCoord(100,100,0)},
 
-        tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0),
-        tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)
+		{tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0)},
+		{tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)}
     };
     
     //THE REFERENCE, NVECTOR AND VVECTOR ARE NOW GLOBAL
@@ -210,25 +210,23 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         //MAIN BEGINS HERE
-        reference.show();
-        std::cout << std::endl;
+        
         //Make temporary copy of the coordinates:
-        tCoord coordinates1[COUNT];
-        std::copy(std::begin(coordinates), std::end(coordinates), coordinates1);
 
+		cubes1 = cubes;
         //Make a view matrix:
         tMatrix ourViewMatrix;
         viewMatrix(&ourViewMatrix, &reference, &Nvector, &Vvector);
-        DoviewMatrix(&ourViewMatrix, coordinates1, COUNT);
+        DoviewMatrix(&ourViewMatrix, cubes1);
 
         tCoord vanishpoint(250,250,-200);
-        DoperspectiveMatrix(&vanishpoint, coordinates1, COUNT);
+        DoperspectiveMatrix(&vanishpoint, cubes1);
         //DocabinetMatrix(45, coordinates1, COUNT);
 
 	    std::vector<bool> zbuffer;
-  	    zbuffer = Dozbuffer(coordinates1, COUNT,reference);
+  	    zbuffer = Dozbuffer(cubes1, reference);
 
-	    Plotvertices(coordinates1, zbuffer, COUNT);
+	    Plotvertices(cubes1, zbuffer );
 
         //MAIN ENDS HERE
         

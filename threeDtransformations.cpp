@@ -280,17 +280,17 @@ void tpivotscaleMatrix(tMatrix* ourMatrix, float sx, float sy, float sz, tCoord 
     ttranslateMatrix(ourMatrix, pivot.x, pivot.y, pivot.z);
 }
 
-void tdoTransform(tCoord* arr, tMatrix* ourMatrix)
+void tdoTransform(tCoord& arr, tMatrix* ourMatrix)
 {
-    int x = ourMatrix->a11*arr->x + ourMatrix->a12*arr->y + ourMatrix->a13*arr->z + ourMatrix->a14*arr->h;
-    int y = ourMatrix->a21*arr->x + ourMatrix->a22*arr->y + ourMatrix->a23*arr->z + ourMatrix->a24*arr->h;
-    int z = ourMatrix->a31*arr->x + ourMatrix->a32*arr->y + ourMatrix->a33*arr->z + ourMatrix->a34*arr->h;
-    int h = ourMatrix->a41*arr->x + ourMatrix->a42*arr->y + ourMatrix->a43*arr->z + ourMatrix->a44*arr->h;
+    int x = ourMatrix->a11*arr.x + ourMatrix->a12*arr.y + ourMatrix->a13*arr.z + ourMatrix->a14*arr.h;
+    int y = ourMatrix->a21*arr.x + ourMatrix->a22*arr.y + ourMatrix->a23*arr.z + ourMatrix->a24*arr.h;
+    int z = ourMatrix->a31*arr.x + ourMatrix->a32*arr.y + ourMatrix->a33*arr.z + ourMatrix->a34*arr.h;
+    int h = ourMatrix->a41*arr.x + ourMatrix->a42*arr.y + ourMatrix->a43*arr.z + ourMatrix->a44*arr.h;
 
-    arr->x = x;
-    arr->y = y;
-    arr->z = z;
-    arr->h = h;
+    arr.x = x;
+    arr.y = y;
+    arr.z = z;
+    arr.h = h;
 }
 
 void viewMatrix(tMatrix *unitMatrix, tCoord *reference, tCoord *Nvector, tCoord *Vvector)
@@ -324,63 +324,99 @@ void viewMatrix(tMatrix *unitMatrix, tCoord *reference, tCoord *Nvector, tCoord 
 }
 
 //Send an array of vertices to do view matrix
-void DoviewMatrix(tMatrix *ourViewMatrix, tCoord *vertices, int noOfVertices)
+void DoviewMatrix(tMatrix *ourViewMatrix, cube& mesh )
 {
-    for (int k = 0; k < noOfVertices; ++k)
+    for (auto& tr: mesh.triangles )
     {
-        tdoTransform(vertices+k, ourViewMatrix);
+        tdoTransform(tr.tri[0], ourViewMatrix);
+		tdoTransform(tr.tri[1], ourViewMatrix);
+		tdoTransform(tr.tri[2], ourViewMatrix);
+
+
     }
 }
 
-void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfVertices)
+void DoTranslateMatrix(float tx, float ty, float tz, cube &mesh)
 {
-    for (int i = 0; i < noOfVertices; ++i)
+    for (auto& tr: mesh.triangles)
     {
-        vertices[i].x += tx;
-        vertices[i].y += ty;
-        vertices[i].z += tz;
+        tr.tri[0].x += tx;
+        tr.tri[0].y += ty;
+        tr.tri[0].z += tz;
+
+		tr.tri[1].x += tx;
+        tr.tri[1].y += ty;
+        tr.tri[1].z += tz;
+
+		tr.tri[2].x += tx;
+        tr.tri[2].y += ty;
+        tr.tri[2].z += tz;
+
     }
 }
 
-void DoRotateMatrix(float theta, tCoord axis, tCoord *vertices, int noOfVertices)
+void DoRotateMatrix(float theta, tCoord axis,cube& mesh )
 {
     tMatrix unit_test;
     trotateMatrix(&unit_test, theta, axis);
-    for (int i = 0; i < noOfVertices; ++i)
+    for (auto& tr: mesh.triangles)
     {
-        tdoTransform(vertices+i, &unit_test);
+        tdoTransform(tr.tri[0], &unit_test);
+		tdoTransform(tr.tri[1], &unit_test);
+		tdoTransform(tr.tri[2], &unit_test);
     }
 }
 
-void DocabinetMatrix(float phi, tCoord *vertices, int noOfVertices)
+void DocabinetMatrix(float phi, cube& mesh)
 {
     float sint = sin((3.14*(float)phi)/180.0);
     float cost = cos((3.14*(float)phi)/180.0);
 
-    for (int k = 0; k < noOfVertices; ++k)
+    for (auto& tr: mesh.triangles)
     {
-        float xp = vertices[k].x + vertices[k].z*0.5*cost;
-        float yp = vertices[k].y + vertices[k].z*0.5*sint;
-        vertices[k].x = xp;
-        vertices[k].y = yp;
+        float xp = tr.tri[0].x + tr.tri[0].z*0.5*cost;
+        float yp = tr.tri[0].y + tr.tri[0].z*0.5*sint;
+        tr.tri[0].x = xp;
+        tr.tri[0].y = yp;
+
+		xp = tr.tri[1].x + tr.tri[1].z*0.5*cost;
+        yp = tr.tri[1].y + tr.tri[1].z*0.5*sint;
+        tr.tri[1].x = xp;
+        tr.tri[1].y = yp;
+
+		xp = tr.tri[2].x + tr.tri[2].z*0.5*cost;
+        yp = tr.tri[2].y + tr.tri[2].z*0.5*sint;
+        tr.tri[2].x = xp;
+        tr.tri[2].y = yp;
+
     }
 }
 
-void DocavalierMatrix(float phi, tCoord *vertices, int noOfVertices)
+void DocavalierMatrix(float phi, cube& mesh)
 {
     float sint = sin((3.14*(float)phi)/180.0);
     float cost = cos((3.14*(float)phi)/180.0);
 
-    for (int k = 0; k < noOfVertices; ++k)
+    for (auto& tr: mesh.triangles)
     {
-        float xp = vertices[k].x + vertices[k].z*cost;
-        float yp = vertices[k].y + vertices[k].z*0.5*sint;
-        vertices[k].x = xp;
-        vertices[k].y = yp;
-    }
+        float xp = tr.tri[0].x + tr.tri[0].z*cost;
+        float yp = tr.tri[0].y + tr.tri[0].z*0.5*sint;
+        tr.tri[0].x = xp;
+        tr.tri[0].y = yp;
+
+    	xp = tr.tri[1].x + tr.tri[1].z*cost;
+        yp = tr.tri[1].y + tr.tri[1].z*0.5*sint;
+        tr.tri[1].x = xp;
+        tr.tri[1].y = yp;
+
+		xp = tr.tri[2].x + tr.tri[2].z*cost;
+        yp = tr.tri[2].y + tr.tri[2].z*0.5*sint;
+        tr.tri[2].x = xp;
+        tr.tri[2].y = yp;
+	}
 }
 
-void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices)
+void DoperspectiveMatrix(tCoord *vanishpoint, cube& mesh)
 {
     float xwmin = 0;
     float ywmin = 0;
@@ -394,32 +430,47 @@ void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices
     float a = -(xrp-0.5*(xwmin+xwmax))/zrp;
     float b = -(yrp-0.5*(ywmin+ywmax))/zrp;
 
-    for (int k = 0; k < noOfVertices; ++k)
+    for (auto& tr:mesh.triangles)
     {
-        float xd = vertices[k].x+a*(vertices[k].z-zrp);
-        float yd = vertices[k].y+b*(vertices[k].z-zrp);
-        float xp = (xd*zrp-xrp*vertices[k].z)/(zrp-vertices[k].z);
-        float yp = (yd*zrp-yrp*vertices[k].z)/(zrp-vertices[k].z);
-        vertices[k].x = xp;
-        vertices[k].y = yp;
+        float xd = tr.tri[0].x+a*(tr.tri[0].z-zrp);
+        float yd = tr.tri[0].y+b*(tr.tri[0].z-zrp);
+        float xp = (xd*zrp-xrp*tr.tri[0].z)/(zrp-tr.tri[0].z);
+        float yp = (yd*zrp-yrp*tr.tri[0].z)/(zrp-tr.tri[0].z);
+        tr.tri[0].x = xp;
+        tr.tri[0].y = yp;
+
+		xd = tr.tri[1].x+a*(tr.tri[1].z-zrp);
+        yd = tr.tri[1].y+b*(tr.tri[1].z-zrp);
+        xp = (xd*zrp-xrp*tr.tri[1].z)/(zrp-tr.tri[1].z);
+        yp = (yd*zrp-yrp*tr.tri[1].z)/(zrp-tr.tri[1].z);
+        tr.tri[1].x = xp;
+        tr.tri[1].y = yp;
+
+		xd = tr.tri[2].x+a*(tr.tri[2].z-zrp);
+        yd = tr.tri[2].y+b*(tr.tri[2].z-zrp);
+        xp = (xd*zrp-xrp*tr.tri[2].z)/(zrp-tr.tri[2].z);
+        yp = (yd*zrp-yrp*tr.tri[2].z)/(zrp-tr.tri[2].z);
+        tr.tri[2].x = xp;
+        tr.tri[2].y = yp;
+
     }
 }
 
-std::vector<bool> Dozbuffer(tCoord* coordinates, int noOfVertices,tCoord cameraPosition)
+std::vector<bool> Dozbuffer(cube& mesh,tCoord cameraPosition)
 {
    std::vector<bool> zbuffer;
-   for (int i=0;i< noOfVertices -1; i=i+3)
+   for (auto& tr:mesh.triangles)
    {
 	   tCoord vec1, vec2, normal, direction,temp ;
 	   float product;
 
-	   vec1 = coordinates[i+1] - coordinates[i];
-	   vec2 = coordinates[i+2] - coordinates[i];
+	   vec1 = tr.tri[1] - tr.tri[0];
+	   vec2 = tr.tri[2] - tr.tri[0];
 
 	   normal = vec1.cross(vec2); 
 	   normal.normalize();
 
-	   temp=coordinates[i];
+	   temp=tr.tri[0];
 	   temp.normalize();
 	   direction = temp - cameraPosition;
 
@@ -439,20 +490,23 @@ std::vector<bool> Dozbuffer(tCoord* coordinates, int noOfVertices,tCoord cameraP
    return zbuffer;
 }
 
-void Plotvertices(tCoord *coordinates,std::vector<bool> &zbuffer, int COUNT)
+void Plotvertices(cube& mesh,std::vector<bool> &zbuffer)
 {
-    for (int i = 0,k=0; i < COUNT-1; i=i+3,++k)
+
+	int k =0;
+    for (auto& tr:mesh.triangles)
     {
 		//cout<<coordinates[i].x<<"  "<<coordinates[i].y<<" "<<coordinates[i+1].x<<" "<<coordinates[i+1].y<<endl;
 
 		if (zbuffer[k])
 		{
-	        RasterizeTriangle(coordinates[i].x, coordinates[i].y, coordinates[i+1].x, coordinates[i+1].y, coordinates[i+2].x,coordinates[i+2].y);
+	        RasterizeTriangle(tr.tri[0].x, tr.tri[0].y, tr.tri[1].x, tr.tri[1].y, tr.tri[2].x,tr.tri[2].y);
 
-			LineDDA(Coord(coordinates[i].x, coordinates[i].y), Coord(coordinates[i+1].x, coordinates[i+1].y));
-			LineDDA(Coord(coordinates[i+1].x, coordinates[i+1].y), Coord(coordinates[i+2].x, coordinates[i+2].y));
-			LineDDA(Coord(coordinates[i+2].x, coordinates[i+2].y), Coord(coordinates[i].x, coordinates[i].y));
+			LineDDA(Coord(tr.tri[0].x, tr.tri[0].y), Coord(tr.tri[1].x, tr.tri[1].y));
+			LineDDA(Coord(tr.tri[1].x, tr.tri[1].y), Coord(tr.tri[2].x, tr.tri[2].y));
+			LineDDA(Coord(tr.tri[2].x, tr.tri[2].y), Coord(tr.tri[0].x, tr.tri[0].y));
 		}
+		++k;
 	    
 
     }
