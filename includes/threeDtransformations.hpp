@@ -4,7 +4,6 @@
 #include<bits/stdc++.h>
 
 #include "twoDtransformations.hpp"
-#include "scanalgorithms.hpp"
 class tCoord
 {
     public:
@@ -82,10 +81,9 @@ void DoTranslateMatrix(float tx, float ty, float tz, cube &mesh);
 void DoRotateMatrix(float theta, tCoord axis,cube& mesh );
 
 //std::vector<bool> Dozbuffer(tCoord* coordinates, int noOfVertices,tCoord cameraPosition = tCoord(0,0,0));
-std::vector<bool> Dozbuffer(cube& mesh,tCoord cameraPosition=tCoord(0,0,0));
+std::vector<bool> DobackSurfacedetection(cube& mesh,tCoord cameraPosition=tCoord(0,0,0));
 
 //void Plotvertices(tCoord *coordinates,std::vector<bool>& zbuffer, int COUNT);
-void Plotvertices(cube& mesh,std::vector<bool> &zbuffer);
 
 
 #endif

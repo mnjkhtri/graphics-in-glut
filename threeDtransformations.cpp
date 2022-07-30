@@ -456,14 +456,15 @@ void DoperspectiveMatrix(tCoord *vanishpoint, cube& mesh)
     }
 }
 
-std::vector<bool> Dozbuffer(cube& mesh,tCoord cameraPosition)
+std::vector<bool> DobackSurfacedetection(cube& mesh,tCoord cameraPosition)
 {
    std::vector<bool> zbuffer;
    for (auto& tr:mesh.triangles)
    {
-	   tCoord vec1, vec2, normal, direction,temp ;
+	   tCoord vec1, vec2, normal, direction,temp,midpoint ;
 	   float product;
 
+	  
 	   vec1 = tr.tri[1] - tr.tri[0];
 	   vec2 = tr.tri[2] - tr.tri[0];
 
@@ -488,28 +489,6 @@ std::vector<bool> Dozbuffer(cube& mesh,tCoord cameraPosition)
    }
    
    return zbuffer;
-}
-
-void Plotvertices(cube& mesh,std::vector<bool> &zbuffer)
-{
-
-	int k =0;
-    for (auto& tr:mesh.triangles)
-    {
-		//cout<<coordinates[i].x<<"  "<<coordinates[i].y<<" "<<coordinates[i+1].x<<" "<<coordinates[i+1].y<<endl;
-
-		if (zbuffer[k])
-		{
-	        RasterizeTriangle(tr.tri[0].x, tr.tri[0].y, tr.tri[1].x, tr.tri[1].y, tr.tri[2].x,tr.tri[2].y);
-
-			LineDDA(Coord(tr.tri[0].x, tr.tri[0].y), Coord(tr.tri[1].x, tr.tri[1].y));
-			LineDDA(Coord(tr.tri[1].x, tr.tri[1].y), Coord(tr.tri[2].x, tr.tri[2].y));
-			LineDDA(Coord(tr.tri[2].x, tr.tri[2].y), Coord(tr.tri[0].x, tr.tri[0].y));
-		}
-		++k;
-	    
-
-    }
 }
 
 

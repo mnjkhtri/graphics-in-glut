@@ -178,7 +178,7 @@ int main()
     // glBindVertexArray(0);
 
 
-	cube cubes,cubes1;
+	cube cubes,cubes2,cubes1,pyramid,cubes3;
     cubes.triangles= 
     {
 		{tCoord(0,0,0), tCoord(0,100,0), tCoord(100,100,0)},
@@ -200,9 +200,23 @@ int main()
 		{tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)}
     };
     
-    //THE REFERENCE, NVECTOR AND VVECTOR ARE NOW GLOBAL
+	pyramid.triangles ={
+		{tCoord(0,0,0), tCoord(50,100,50), tCoord(100,0,0)},
+	 	{tCoord(100,0,0), tCoord(50,100,50), tCoord(100,0,100)},   
 
+         {tCoord(100,0,100), tCoord(50,100,50), tCoord(0,0,100)},   
+         {tCoord(0,0,100), tCoord(50,100,50), tCoord(0,0,0)},   
+
+         {tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0)},   
+         {tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)},
+
+};
+	cubes2 = cubes;
+    DoTranslateMatrix(150,0,0,cubes2);
+
+    //THE REFERENCE, NVECTOR AND VVECTOR ARE NOW GLOBAL
     Angel::init(SCREEN_W, SCREEN_H);
+	std::unordered_map<std::string, float> zbuffer;
     while (!glfwWindowShouldClose(window)) 
     {
         processInput(window);
@@ -214,20 +228,41 @@ int main()
         //Make temporary copy of the coordinates:
 
 		cubes1 = cubes;
+		cubes3 = cubes2;
+
+
         //Make a view matrix:
         tMatrix ourViewMatrix;
         viewMatrix(&ourViewMatrix, &reference, &Nvector, &Vvector);
         DoviewMatrix(&ourViewMatrix, cubes1);
+		DoviewMatrix(&ourViewMatrix,cubes3);
 
         tCoord vanishpoint(250,250,-200);
         DoperspectiveMatrix(&vanishpoint, cubes1);
+		DoperspectiveMatrix(&vanishpoint, cubes3);
         //DocabinetMatrix(45, coordinates1, COUNT);
 
-	    std::vector<bool> zbuffer;
-  	    zbuffer = Dozbuffer(cubes1, reference);
+	    //std::vector<bool> zbuffer;
+  	    //zbuffer = Dozbuffer(cubes1, reference);
 
-	    Plotvertices(cubes1, zbuffer );
 
+		for(auto& tr:cubes1.triangles)
+		{
+
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2],zbuffer);
+
+		//	LineDDA(Coord(tr.tri[0].x, tr.tri[0].y), Coord(tr.tri[1].x, tr.tri[1].y));
+	//		LineDDA(Coord(tr.tri[1].x, tr.tri[1].y), Coord(tr.tri[2].x, tr.tri[2].y));
+	//		LineDDA(Coord(tr.tri[2].x, tr.tri[2].y), Coord(tr.tri[0].x, tr.tri[0].y));
+
+
+		}
+		for(auto& tr:cubes3.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer,Color(1.0f,0.0f,0.0f));
+		}
+
+		zbuffer.erase(zbuffer.begin(),zbuffer.end());
         //MAIN ENDS HERE
         
         glfwSwapBuffers(window);

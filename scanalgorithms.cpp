@@ -1,7 +1,8 @@
 #include <GL/glut.h>
 #include <iostream>
+#include <string>
 #include "includes/scanalgorithms.hpp"
-#include "includes/Angel.hpp"
+
 
 int round(float x)
 {
@@ -190,10 +191,54 @@ void Square(Coord first, Coord second, Coord third, Coord forth)
 }
 
 // draw triangle and fill accordingly
-void RasterizeTriangle(int x1, int y1, int x2, int y2, int x3, int y3)
+void RasterizeTriangle(tCoord vertices1, tCoord vertices2, tCoord vertices3,std::unordered_map<std::string,float>& zbuffer,Color co)
 	{
+		int x1 = vertices1.x, y1=vertices1.y;
+		int x2 = vertices2.x, y2 = vertices2.y;
+		int x3 = vertices3.x, y3 = vertices3.y;
+
+		//finding out normals 
+
+		tCoord vec1, vec2,normal ;
+
+		vec1 = vertices2 - vertices1;
+		vec2 = vertices3 - vertices1;
+		normal = vec1.cross(vec2);
+
+
+		// finding out d for eqn ax+by+cz+d = 0
+		// a,b,c is given by the normal
+		float d =   normal.x * vertices1.x + normal.y * vertices1.y + normal.z * vertices1.z ;
+
+
 		auto SWAP = [](int &x, int &y) { int t = x; x = y; y = t; };
-		auto drawline = [&](int sx, int ex, int ny) { for (int i = sx; i <= ex; i++) Angel::putPixel(i, ny); };
+		auto drawline = [&](int sx, int ex, int ny) 
+		{ 
+			for (int i = sx; i <= ex; i++) 
+			{
+				//finding out z for the surface ax+by+cz+d = 0
+				float z = (d - normal.x * i - normal.y *  ny)/normal.z;
+
+				std::string key = std::to_string(i) +"-"+std::to_string(ny);
+
+				//in case key is not found in the buffer we 
+				if(zbuffer.find(key) == zbuffer.end())
+				{
+					zbuffer[key] = z;
+					Angel::putPixel(i,ny,1,co);
+				}
+
+				else
+				{
+					if(zbuffer[key]>z)
+					{
+						zbuffer[key] = z;
+						Angel::putPixel(i,ny,1,co);
+					}
+				}
+			}
+
+		};
 		
 		int t1x, t2x, y, minx, maxx, t1xp, t2xp;
 		bool changed1 = false;
