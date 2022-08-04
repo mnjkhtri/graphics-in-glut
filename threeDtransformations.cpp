@@ -430,8 +430,8 @@ void DoperspectiveMatrix(tCoord *vanishpoint, cube& mesh)
 {
     float xwmin = 0;
     float ywmin = 0;
-    float xwmax = 100;
-    float ywmax = 100;
+    float xwmax = 500;
+    float ywmax = 500;
 
     float xrp = vanishpoint->x;
     float yrp = vanishpoint->y;
@@ -488,12 +488,12 @@ void DoperspectiveMatrix(tCoord *vanishpoint, tCoord &vertices)
 
 
 }
-std::vector<bool> DobackSurfacedetection(cube& mesh,tCoord cameraPosition)
+std::vector<bool> Dozbuffer(cube& mesh, tCoord cameraPosition)
 {
    std::vector<bool> zbuffer;
    for (auto& tr:mesh.triangles)
    {
-	   tCoord vec1, vec2, normal, direction,temp,midpoint ;
+	   tCoord vec1, vec2, normal, direction, temp ;
 	   float product;
 
 	  
@@ -507,19 +507,14 @@ std::vector<bool> DobackSurfacedetection(cube& mesh,tCoord cameraPosition)
 	   temp.normalize();
 	   direction = temp - cameraPosition;
 
-
 	   product = normal.dot(direction);
 	   
-
-
 	   if (product<=0.0f)
 	   //if(normal.z<0.0f)
 		   zbuffer.push_back(true);
 	   else
 		   zbuffer.push_back(false);
-
    }
-   
    return zbuffer;
 }
 

@@ -10,9 +10,13 @@
 #define SCREEN_W 1000
 #define SCREEN_H 1000
 
-tCoord reference(0,0,-10);
+int default_x = 0;
+int default_y = 0;
+int default_z = -10;
+tCoord reference(default_x,default_y,default_z);
 tCoord Nvector(0,0,1);
 tCoord Vvector(0,1,0);
+tCoord vanishpoint(550,250,-500);
 
 /*
 1) OpenGL takes in 3D coordinates and transfroms them into 2D pixels through the process of pipelining.
@@ -202,17 +206,21 @@ int main()
 		{tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)}
     };
     
-	pyramid.triangles ={
-		{tCoord(0,0,0), tCoord(50,100,50), tCoord(100,0,0)},
-	 	{tCoord(100,0,0), tCoord(50,100,50), tCoord(100,0,100)},   
 
-         {tCoord(100,0,100), tCoord(50,100,50), tCoord(0,0,100)},   
-         {tCoord(0,0,100), tCoord(50,100,50), tCoord(0,0,0)},   
+    // cube cubes;
+    // cubes.triangles =
+    // {
+    //     {tCoord(0,0,0), tCoord(0,0,100), tCoord(100,0,100)},
+	// 	{tCoord(0,0,0), tCoord(100,0,100), tCoord(100,0,0)},   
 
-         {tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0)},   
-         {tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)},
+    //     {tCoord(0,0,0), tCoord(100,0,0), tCoord(50,100,50)},   
+    //     {tCoord(0,0,0), tCoord(0,0,100), tCoord(50,100,50)},   
+    //     {tCoord(100,0,0), tCoord(100,0,100), tCoord(50,100,50)},   
+    //     {tCoord(0,0,100), tCoord(100,0,100), tCoord(50,100,50)},   
+    // };
 
-};
+    //RESULT = CUBE + PYRAMID
+    //THE REFERENCE, NVECTOR AND VVECTOR ARE NOW GLOBAL
 	cubes2 = cubes;
     //DoTranslateMatrix(50,50,50,cubes2);
 
@@ -269,6 +277,14 @@ int main()
 	    //std::vector<bool> zbuffer;
   	    //zbuffer = Dozbuffer(cubes1, reference);
 
+		cube cubes_temp = cubes;
+        //Make a view matrix:
+        viewMatrix(&ourViewMatrix, &reference, &Nvector, &Vvector);
+
+        DoviewMatrix(&ourViewMatrix, cubes_temp);
+        DoperspectiveMatrix(&vanishpoint, cubes_temp);
+        //DocabinetMatrix(45, cubes_temp);
+	    std::vector<bool> zbuffer;
 
 		//for(auto& tr:cubes1.triangles)
 	//	{
@@ -282,15 +298,6 @@ int main()
 
 //		}
 
-
-		int n = 0;
-		for(auto& tr:cubes3.triangles)
-		{
-		//	tCoord color = Dolighting(cube_m, light_m, tr, reference); 
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer,Color(color[n].x,color[n].y,color[n].z));
-			++n;
-		//	RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer,Color(1.0f,0.0f,0.0f));
-		}
 
 		zbuffer.erase(zbuffer.begin(),zbuffer.end());
 		color.clear();
@@ -318,20 +325,33 @@ void processInput(GLFWwindow *window)
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        reference.z += 10;
-        
+        reference.z += 5;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        reference.z -= 10;
+        reference.z -= 5;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        reference.x += 10;
+        reference.x += 5;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        reference.x -= 10;
+        reference.x -= 5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        reference.y += 5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        reference.y -= 5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    {
+        reference.x = default_x;
+        reference.y = default_y;
+        reference.y = default_z;
     }
 }
 

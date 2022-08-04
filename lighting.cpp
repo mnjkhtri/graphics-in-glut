@@ -53,7 +53,8 @@ tCoord Dolighting(Material material, Light light, triangle& tr, tCoord cameraPos
 	specular.show();
 	std::cout<<std::endl<<std::endl;
 */ 	
-	tCoord final = ambient + diffuse + specular ;
+//	tCoord final = ambient + diffuse + specular ;
+	tCoord final = ambient + diffuse;
 
 	return final;
 
