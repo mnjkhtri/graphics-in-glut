@@ -15,6 +15,7 @@ class tCoord
         tCoord(float, float, float);
         tCoord(float, float, float, float);
 		float dot(tCoord);
+		tCoord operator * (tCoord);
 		tCoord operator* (float);
 		tCoord operator + (tCoord);
 		tCoord operator - (tCoord);
@@ -71,7 +72,7 @@ void DocabinetMatrix(float phi, cube& mesh);
 //void DocavalierMatrix(float phi, tCoord *vertices, int noOfVertices);
 void DocavalierMatrix(float phi, cube& mesh);
 
-//void DoperspectiveMatrix(tCoord *vanishpoint, tCoord *vertices, int noOfVertices);
+void DoperspectiveMatrix(tCoord *vanishpoint, tCoord &vertices); 
 void DoperspectiveMatrix(tCoord *vanishpoint, cube& mesh);
 
 //void DoTranslateMatrix(float tx, float ty, float tz, tCoord *vertices, int noOfVertices);

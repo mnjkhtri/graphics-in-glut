@@ -5,6 +5,8 @@
 #include "includes/threeDtransformations.hpp"
 #include "includes/twoDtransformations.hpp"
 #include "includes/Angel.hpp"
+#include "includes/lighting.hpp"
+
 #define SCREEN_W 1000
 #define SCREEN_H 1000
 
@@ -212,11 +214,24 @@ int main()
 
 };
 	cubes2 = cubes;
-    DoTranslateMatrix(150,0,0,cubes2);
+    //DoTranslateMatrix(50,50,50,cubes2);
 
     //THE REFERENCE, NVECTOR AND VVECTOR ARE NOW GLOBAL
     Angel::init(SCREEN_W, SCREEN_H);
 	std::unordered_map<std::string, float> zbuffer;
+	Material cube_m;
+	cube_m.ambient = tCoord(0.05f, 0.0f, 0.0f); 
+	cube_m.diffuse = tCoord(0.5f, 0.4f, 0.4f);
+	cube_m.specular = tCoord(0.7f,0.04f,0.04f);
+	cube_m.shininess = 0.078125f;
+
+	Light light_m;
+	light_m.position = tCoord (50.0f, 150.0f, -10.0f);
+	light_m.ambient = tCoord(0.2f, 0.2f, 0.2f);
+	light_m.diffuse = tCoord(0.5f, 0.5f, 0.5f);
+	light_m.specular = tCoord(1.0f, 1.0f, 1.0f);
+
+
     while (!glfwWindowShouldClose(window)) 
     {
         processInput(window);
@@ -230,15 +245,24 @@ int main()
 		cubes1 = cubes;
 		cubes3 = cubes2;
 
+		std::vector<tCoord> color;
+		for(auto&tr : cubes2.triangles)
+		{
+
+			tCoord c = Dolighting(cube_m, light_m, tr, reference);
+			color.push_back(c);
+		}
+
+	//DoRotateMatrix(angle, tCoord (1,0,0), cubes3 );
 
         //Make a view matrix:
         tMatrix ourViewMatrix;
         viewMatrix(&ourViewMatrix, &reference, &Nvector, &Vvector);
-        DoviewMatrix(&ourViewMatrix, cubes1);
+     //   DoviewMatrix(&ourViewMatrix, cubes1);
 		DoviewMatrix(&ourViewMatrix,cubes3);
 
         tCoord vanishpoint(250,250,-200);
-        DoperspectiveMatrix(&vanishpoint, cubes1);
+      //  DoperspectiveMatrix(&vanishpoint, cubes1);
 		DoperspectiveMatrix(&vanishpoint, cubes3);
         //DocabinetMatrix(45, coordinates1, COUNT);
 
@@ -246,23 +270,30 @@ int main()
   	    //zbuffer = Dozbuffer(cubes1, reference);
 
 
-		for(auto& tr:cubes1.triangles)
-		{
+		//for(auto& tr:cubes1.triangles)
+	//	{
 
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2],zbuffer);
+	//		RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2],zbuffer);
 
 		//	LineDDA(Coord(tr.tri[0].x, tr.tri[0].y), Coord(tr.tri[1].x, tr.tri[1].y));
 	//		LineDDA(Coord(tr.tri[1].x, tr.tri[1].y), Coord(tr.tri[2].x, tr.tri[2].y));
 	//		LineDDA(Coord(tr.tri[2].x, tr.tri[2].y), Coord(tr.tri[0].x, tr.tri[0].y));
 
 
-		}
+//		}
+
+
+		int n = 0;
 		for(auto& tr:cubes3.triangles)
 		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer,Color(1.0f,0.0f,0.0f));
+		//	tCoord color = Dolighting(cube_m, light_m, tr, reference); 
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer,Color(color[n].x,color[n].y,color[n].z));
+			++n;
+		//	RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer,Color(1.0f,0.0f,0.0f));
 		}
 
 		zbuffer.erase(zbuffer.begin(),zbuffer.end());
+		color.clear();
         //MAIN ENDS HERE
         
         glfwSwapBuffers(window);
@@ -288,10 +319,7 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
         reference.z += 10;
-        if (reference.z >= 5)
-        {
-            reference.z = 0;
-        }
+        
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {

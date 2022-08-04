@@ -45,6 +45,16 @@ float tCoord::dot(tCoord t)
 	return product;
 }
 
+tCoord tCoord::operator* (tCoord t)
+{
+   tCoord temp;
+
+   temp.x = x * t.x;
+   temp.y = y * t.y;
+   temp.z = z * t.z;
+
+   return temp;
+}
 tCoord tCoord::operator*(float a)
 {
 	tCoord temp;
@@ -455,7 +465,29 @@ void DoperspectiveMatrix(tCoord *vanishpoint, cube& mesh)
 
     }
 }
+void DoperspectiveMatrix(tCoord *vanishpoint, tCoord &vertices)
+{
+	float xwmin = 0;
+    float ywmin = 0;
+    float xwmax = 100;
+    float ywmax = 100;
 
+    float xrp = vanishpoint->x;
+    float yrp = vanishpoint->y;
+    float zrp = vanishpoint->z;
+
+    float a = -(xrp-0.5*(xwmin+xwmax))/zrp;
+    float b = -(yrp-0.5*(ywmin+ywmax))/zrp;
+
+	float xd = vertices.x+a*(vertices.z-zrp);
+    float yd = vertices.y+b*(vertices.z-zrp);
+    float xp = (xd*zrp-xrp*vertices.z)/(zrp-vertices.z);
+    float yp = (yd*zrp-yrp*vertices.z)/(zrp-vertices.z);
+    vertices.x = xp;
+    vertices.y = yp;
+
+
+}
 std::vector<bool> DobackSurfacedetection(cube& mesh,tCoord cameraPosition)
 {
    std::vector<bool> zbuffer;
