@@ -7,12 +7,15 @@
 #include "includes/Angel.hpp"
 #include "includes/lighting.hpp"
 
-#define SCREEN_W 1000
+#define SCREEN_W 2000
 #define SCREEN_H 1000
 
-tCoord reference(0,0,-10);
+float angle = 0;
+tCoord reference(200,0,-10);
 tCoord Nvector(0,0,1);
 tCoord Vvector(0,1,0);
+tCoord vanishpoint(500,300,-1000);
+
 
 /*
 1) OpenGL takes in 3D coordinates and transfroms them into 2D pixels through the process of pipelining.
@@ -180,8 +183,8 @@ int main()
     // glBindVertexArray(0);
 
 
-	cube cubes,cubes2,cubes1,pyramid,cubes3;
-    cubes.triangles= 
+	cube Block1, Block1_windows, Block1_door;
+    Block1.triangles= 
     {
 		{tCoord(0,0,0), tCoord(0,100,0), tCoord(100,100,0)},
 		{tCoord(0,0,0), tCoord(100,100,0), tCoord(100,0,0)},
@@ -199,39 +202,262 @@ int main()
 		{tCoord(0,100,0), tCoord(100,100,100), tCoord(100,100,0)},
 
 		{tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0)},
-		{tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)}
+		{tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)},
     };
-    
-	pyramid.triangles ={
-		{tCoord(0,0,0), tCoord(50,100,50), tCoord(100,0,0)},
-	 	{tCoord(100,0,0), tCoord(50,100,50), tCoord(100,0,100)},   
+    Block1_windows.triangles = 
+    {
+        {tCoord(100,60,10), tCoord(100,90,10), tCoord(100,90,40)},
+        {tCoord(100,60,10), tCoord(100,90,40), tCoord(100,60,40)},
+        {tCoord(100,60,60), tCoord(100,90,60), tCoord(100,90,90)},
+        {tCoord(100,60,60), tCoord(100,90,90), tCoord(100,60,90)}
+    };
+    Block1_door.triangles = 
+    {
+        {tCoord(100,0,40), tCoord(100,50,40), tCoord(100,50,60)},
+        {tCoord(100,50,60), tCoord(100,0,60), tCoord(100,0,40)},
+        {tCoord(100,0,40), tCoord(100,50,40), tCoord(100,50,60)},
+        {tCoord(100,50,60), tCoord(100,0,60), tCoord(100,0,40)},
+    };
 
-         {tCoord(100,0,100), tCoord(50,100,50), tCoord(0,0,100)},   
-         {tCoord(0,0,100), tCoord(50,100,50), tCoord(0,0,0)},   
+    cube Highway;
+    Highway.triangles = 
+    {
+        {tCoord(150,0,0), tCoord(500,0,0), tCoord(150,0,5000)},
+        {tCoord(500,0,0), tCoord(150,0,5000), tCoord(500,0,5000)},
+    };
+    //LENGTH IS FROM 0 TO 1000, WIDTH FROM 150 to 500
 
-         {tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0)},   
-         {tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)},
+    cube Highwaystrips;
+    Highwaystrips.triangles =
+    {
+        {tCoord(300,0,0), tCoord(320,0,0), tCoord(300,0,100)},
+        {tCoord(320,0,0), tCoord(300,0,100), tCoord(320,0,100)},
+        {tCoord(300,0,150+0), tCoord(320,0,150+0), tCoord(300,0,150+100)},
+        {tCoord(320,0,150+0), tCoord(300,0,150+100), tCoord(320,0,150+100)},
+        {tCoord(300,0,150+150+0), tCoord(320,0,150+150+0), tCoord(300,0,150+150+100)},
+        {tCoord(320,0,150+150+0), tCoord(300,0,150+150+100), tCoord(320,0,150+150+100)},
+        {tCoord(300,0,150+150+150+0), tCoord(320,0,150+150+150+0), tCoord(300,0,150+150+150+100)},
+        {tCoord(320,0,150+150+150+0), tCoord(300,0,150+150+150+100), tCoord(320,0,150+150+150+100)},
+        {tCoord(300,0,150+150+150+150+0), tCoord(320,0,150+150+150+150+0), tCoord(300,0,150+150+150+150+100)},
+        {tCoord(320,0,150+150+150+150+0), tCoord(300,0,150+150+150+150+100), tCoord(320,0,150+150+150+150+100)},
+        {tCoord(300,0,150+150+150+150+150+0), tCoord(320,0,150+150+150+150+150+0), tCoord(300,0,150+150+150+150+150+100)},
+        {tCoord(320,0,150+150+150+150+150+0), tCoord(300,0,150+150+150+150+150+100), tCoord(320,0,150+150+150+150+150+100)},
+    };
 
-};
-	cubes2 = cubes;
-    //DoTranslateMatrix(50,50,50,cubes2);
+    cube Rotating_body1;
+    Rotating_body1.triangles = 
+    {
+		{tCoord(0,0,0), tCoord(0,100,0), tCoord(1,100,0)},
+		{tCoord(0,0,0), tCoord(1,100,0), tCoord(1,0,0)},
+
+		{tCoord(1,0,0), tCoord(1,100,0), tCoord(1,100,1)},
+		{tCoord(1,0,0), tCoord(1,100,1), tCoord(1,0,1)},
+
+		{tCoord(1,0,1), tCoord(1,100,1), tCoord(0,100,1)},
+		{tCoord(1,0,1), tCoord(0,100,1), tCoord(0,0,1)},
+
+		{tCoord(0,0,1), tCoord(0,100,1), tCoord(0,100,0)},
+		{tCoord(0,0,1), tCoord(0,100,0), tCoord(0,0,0)},
+
+		{tCoord(0,100,0), tCoord(0,100,1), tCoord(1,100,1)},
+		{tCoord(0,100,0), tCoord(1,100,1), tCoord(1,100,0)},
+
+		{tCoord(1,0,1), tCoord(0,0,1), tCoord(0,0,0)},
+		{tCoord(1,0,1), tCoord(0,0,0), tCoord(1,0,0)},
+    };
+    DoTranslateMatrix(100,0,120,Rotating_body1);
+
+    cube Rotating_head1;
+    Rotating_head1.triangles = 
+    {
+        {tCoord(5,100,0), tCoord(5,70,0), tCoord(5,70,20)},
+        {tCoord(5,70,0), tCoord(5,40,0), tCoord(5,40,20)},
+    };
+    DoTranslateMatrix(100,0,120,Rotating_head1);
+
+    cube Chair;
+    Chair.triangles =
+    {
+        //First leg:
+		{tCoord(0,0,0), tCoord(0,20,0), tCoord(1,20,0)},
+		{tCoord(0,0,0), tCoord(1,20,0), tCoord(1,0,0)},
+
+		{tCoord(1,0,0), tCoord(1,20,0), tCoord(1,20,1)},
+		{tCoord(1,0,0), tCoord(1,20,1), tCoord(1,0,1)},
+
+		{tCoord(1,0,1), tCoord(1,20,1), tCoord(0,20,1)},
+		{tCoord(1,0,1), tCoord(0,20,1), tCoord(0,0,1)},
+
+		{tCoord(0,0,1), tCoord(0,20,1), tCoord(0,20,0)},
+		{tCoord(0,0,1), tCoord(0,20,0), tCoord(0,0,0)},
+
+		{tCoord(0,20,0), tCoord(0,20,1), tCoord(1,20,1)},
+		{tCoord(0,20,0), tCoord(1,20,1), tCoord(1,20,0)},
+
+		{tCoord(1,0,1), tCoord(0,0,1), tCoord(0,0,0)},
+		{tCoord(1,0,1), tCoord(0,0,0), tCoord(1,0,0)},
+
+        //Second
+		{tCoord(20,0,0), tCoord(20,20,0), tCoord(21,20,0)},
+		{tCoord(20,0,0), tCoord(21,20,0), tCoord(21,0,0)},
+
+		{tCoord(21,0,0), tCoord(21,20,0), tCoord(21,20,1)},
+		{tCoord(21,0,0), tCoord(21,20,1), tCoord(21,0,1)},
+
+		{tCoord(21,0,1), tCoord(21,20,1), tCoord(20,20,1)},
+		{tCoord(21,0,1), tCoord(20,20,1), tCoord(20,0,1)},
+
+		{tCoord(20,0,1), tCoord(20,20,1), tCoord(20,20,0)},
+		{tCoord(20,0,1), tCoord(20,20,0), tCoord(20,0,0)},
+
+		{tCoord(20,20,0), tCoord(20,20,1), tCoord(21,20,1)},
+		{tCoord(20,20,0), tCoord(21,20,1), tCoord(21,20,0)},
+
+		{tCoord(21,0,1), tCoord(20,0,1), tCoord(20,0,0)},
+		{tCoord(21,0,1), tCoord(20,0,0), tCoord(21,0,0)},
+
+        //First leg:
+		{tCoord(0,0,30), tCoord(0,20,30), tCoord(1,20,30)},
+		{tCoord(0,0,30), tCoord(1,20,30), tCoord(1,0,30)},
+
+		{tCoord(1,0,30), tCoord(1,20,30), tCoord(1,20,31)},
+		{tCoord(1,0,30), tCoord(1,20,31), tCoord(1,0,31)},
+
+		{tCoord(1,0,31), tCoord(1,20,31), tCoord(0,20,31)},
+		{tCoord(1,0,31), tCoord(0,20,31), tCoord(0,0,31)},
+
+		{tCoord(0,0,31), tCoord(0,20,31), tCoord(0,20,30)},
+		{tCoord(0,0,31), tCoord(0,20,30), tCoord(0,0,30)},
+
+		{tCoord(0,20,30), tCoord(0,20,31), tCoord(1,20,31)},
+		{tCoord(0,20,30), tCoord(1,20,31), tCoord(1,20,30)},
+
+		{tCoord(1,0,31), tCoord(0,0,31), tCoord(0,0,30)},
+		{tCoord(1,0,31), tCoord(0,0,30), tCoord(1,0,30)},
+
+        //Final
+        {tCoord(20,0,30), tCoord(20,20,30), tCoord(21,20,30)},
+		{tCoord(20,0,30), tCoord(21,20,30), tCoord(21,0,30)},
+
+		{tCoord(21,0,30), tCoord(21,20,30), tCoord(21,20,31)},
+		{tCoord(21,0,30), tCoord(21,20,31), tCoord(21,0,31)},
+
+		{tCoord(21,0,31), tCoord(21,20,31), tCoord(20,20,31)},
+		{tCoord(21,0,31), tCoord(20,20,31), tCoord(20,0,31)},
+
+		{tCoord(20,0,31), tCoord(20,20,31), tCoord(20,20,30)},
+		{tCoord(20,0,31), tCoord(20,20,30), tCoord(20,0,30)},
+
+		{tCoord(20,20,30), tCoord(20,20,31), tCoord(21,20,31)},
+		{tCoord(20,20,30), tCoord(21,20,31), tCoord(21,20,30)},
+
+		{tCoord(21,0,31), tCoord(20,0,31), tCoord(20,0,30)},
+		{tCoord(21,0,31), tCoord(20,0,30), tCoord(21,0,30)},
+
+
+        //Body
+        {tCoord(0,20,0), tCoord(20,20,0), tCoord(20,20,30)},
+		{tCoord(0,20,0), tCoord(0,20,30), tCoord(20,20,30)},
+
+        {tCoord(20,20,0), tCoord(20,20,30), tCoord(25,40,30)},
+		{tCoord(25,40,30), tCoord(25,40,0), tCoord(20,20,0)},
+    };
+    DoTranslateMatrix(540,0,0,Chair);
+
+    cube Human;
+    Human.triangles =
+    {
+        //Firt leg
+        {tCoord(0,0,0), tCoord(0,10,0), tCoord(1,10,0)},
+		{tCoord(0,0,0), tCoord(1,10,0), tCoord(1,0,0)},
+
+		{tCoord(1,0,0), tCoord(1,10,0), tCoord(1,10,1)},
+		{tCoord(1,0,0), tCoord(1,10,1), tCoord(1,0,1)},
+
+		{tCoord(1,0,1), tCoord(1,10,1), tCoord(0,10,1)},
+		{tCoord(1,0,1), tCoord(0,10,1), tCoord(0,0,1)},
+
+		{tCoord(0,0,1), tCoord(0,10,1), tCoord(0,10,0)},
+		{tCoord(0,0,1), tCoord(0,10,0), tCoord(0,0,0)},
+
+		{tCoord(0,10,0), tCoord(0,10,1), tCoord(1,10,1)},
+		{tCoord(0,10,0), tCoord(1,10,1), tCoord(1,10,0)},
+
+		{tCoord(1,0,1), tCoord(0,0,1), tCoord(0,0,0)},
+		{tCoord(1,0,1), tCoord(0,0,0), tCoord(1,0,0)},
+
+        //Second leg
+        {tCoord(5,0,0), tCoord(5,10,0), tCoord(6,10,0)},
+		{tCoord(5,0,0), tCoord(6,10,0), tCoord(6,0,0)},
+
+		{tCoord(6,0,0), tCoord(6,10,0), tCoord(6,10,1)},
+		{tCoord(6,0,0), tCoord(6,10,1), tCoord(6,0,1)},
+
+		{tCoord(6,0,1), tCoord(6,10,1), tCoord(5,10,1)},
+		{tCoord(6,0,1), tCoord(5,10,1), tCoord(5,0,1)},
+
+		{tCoord(5,0,1), tCoord(5,10,1), tCoord(5,10,0)},
+		{tCoord(5,0,1), tCoord(5,10,0), tCoord(5,0,0)},
+
+		{tCoord(5,10,0), tCoord(5,10,1), tCoord(6,10,1)},
+		{tCoord(5,10,0), tCoord(6,10,1), tCoord(6,10,0)},
+
+		{tCoord(6,0,1), tCoord(5,0,1), tCoord(5,0,0)},
+		{tCoord(6,0,1), tCoord(5,0,0), tCoord(6,0,0)},
+
+        //Body:
+		{tCoord(-3,10,0), tCoord(8,10,0), tCoord(8,25,0)},
+        {tCoord(-3,10,0), tCoord(-3,25,0), tCoord(8,25,0)}, 
+
+        //Neck:
+        {tCoord(2,25,0), tCoord(2,28,0), tCoord(3,28,0)},
+		{tCoord(2,25,0), tCoord(3,28,0), tCoord(3,25,0)},
+
+		{tCoord(3,25,0), tCoord(3,28,0), tCoord(3,28,1)},
+		{tCoord(3,25,0), tCoord(3,28,1), tCoord(3,25,1)},
+
+		{tCoord(3,25,1), tCoord(3,28,1), tCoord(2,28,1)},
+		{tCoord(3,25,1), tCoord(2,28,1), tCoord(2,25,1)},
+
+		{tCoord(2,25,1), tCoord(2,28,1), tCoord(2,28,0)},
+		{tCoord(2,25,1), tCoord(2,28,0), tCoord(2,25,0)},
+
+		{tCoord(2,28,0), tCoord(2,28,1), tCoord(3,28,1)},
+		{tCoord(2,28,0), tCoord(3,28,1), tCoord(3,28,0)},
+
+		{tCoord(3,25,1), tCoord(2,25,1), tCoord(2,25,0)},
+		{tCoord(3,25,1), tCoord(2,25,0), tCoord(3,25,0)},
+
+        //GeadL
+        {tCoord(-1,28,0), tCoord(6,28,0), tCoord(6,31,0)},
+        {tCoord(-1,28,0), tCoord(-1,31,0), tCoord(6,31,0)}, 
+    };
+    DoTranslateMatrix(410,0,0,Human);
+
+
 
     //THE REFERENCE, NVECTOR AND VVECTOR ARE NOW GLOBAL
     Angel::init(SCREEN_W, SCREEN_H);
 	std::unordered_map<std::string, float> zbuffer;
-	Material cube_m;
-	cube_m.ambient = tCoord(0.05f, 0.0f, 0.0f); 
-	cube_m.diffuse = tCoord(0.5f, 0.4f, 0.4f);
-	cube_m.specular = tCoord(0.7f,0.04f,0.04f);
-	cube_m.shininess = 0.078125f;
 
-	Light light_m;
-	light_m.position = tCoord (50.0f, 150.0f, -10.0f);
-	light_m.ambient = tCoord(0.2f, 0.2f, 0.2f);
-	light_m.diffuse = tCoord(0.5f, 0.5f, 0.5f);
-	light_m.specular = tCoord(1.0f, 1.0f, 1.0f);
+    int Humanposition = 0;
+    int direction = 1;
 
 
+
+	Material material;
+	material.ambient = tCoord(0.65f, 0.00f, 0.0f);
+	material.diffuse = tCoord(0.5f, 0.0f, 0.0f);
+	material.specular = tCoord(0.7f, 0.04f, 0.04f);
+	material.shininess = 0.078125;
+
+	Light light;
+	light.position = tCoord(300.0f,150.0f,50.0f);
+	light.ambient = tCoord(0.2f, 0.2f, 0.2f);
+	light.diffuse = tCoord(1.0f, 1.0f, 1.0f);
+	light.specular = tCoord(1.0f, 1.0f, 1.0f);
+
+	std::vector<tCoord> Block_Color;
     while (!glfwWindowShouldClose(window)) 
     {
         processInput(window);
@@ -242,58 +468,100 @@ int main()
         
         //Make temporary copy of the coordinates:
 
-		cubes1 = cubes;
-		cubes3 = cubes2;
+        cube Block1_temp = Block1;
+        cube Block1_windows_temp = Block1_windows;
+        cube Block1_door_temp = Block1_door;
+        cube Highway_temp = Highway;
 
-		std::vector<tCoord> color;
-		for(auto&tr : cubes2.triangles)
+        cube Rotating_body1_temp = Rotating_body1;
+        cube Rotating_head1_temp = Rotating_head1;
+        cube Highwaystrips_temp = Highwaystrips;
+
+        cube Chair_temp = Chair;
+        cube Human_temp = Human;
+        DoTranslateMatrix(0,0,Humanposition, Human_temp);
+        Humanposition += direction*100;
+        if (Humanposition > 5000 || Humanposition < 9)
+        {
+            direction = (-1)*direction;
+        }
+
+		//lighting
+
+		for(auto& tr:Block1.triangles )
 		{
-
-			tCoord c = Dolighting(cube_m, light_m, tr, reference);
-			color.push_back(c);
+			tCoord c = Dolighting(material, light, tr, reference);
+			Block_Color.push_back(c);
 		}
 
-	//DoRotateMatrix(angle, tCoord (1,0,0), cubes3 );
+
 
         //Make a view matrix:
         tMatrix ourViewMatrix;
         viewMatrix(&ourViewMatrix, &reference, &Nvector, &Vvector);
-     //   DoviewMatrix(&ourViewMatrix, cubes1);
-		DoviewMatrix(&ourViewMatrix,cubes3);
 
-        tCoord vanishpoint(250,250,-200);
-      //  DoperspectiveMatrix(&vanishpoint, cubes1);
-		DoperspectiveMatrix(&vanishpoint, cubes3);
-        //DocabinetMatrix(45, coordinates1, COUNT);
+        DoviewMatrix(&ourViewMatrix, Block1_temp);
+        DoviewMatrix(&ourViewMatrix, Block1_windows_temp);
+        DoviewMatrix(&ourViewMatrix, Block1_door_temp);
+        DoviewMatrix(&ourViewMatrix, Highway_temp);
+        DoviewMatrix(&ourViewMatrix, Rotating_body1_temp);
+        DoviewMatrix(&ourViewMatrix, Rotating_head1_temp);
+        DoviewMatrix(&ourViewMatrix, Highwaystrips_temp);
+        DoviewMatrix(&ourViewMatrix, Chair_temp);
+        DoviewMatrix(&ourViewMatrix, Human_temp);
 
-	    //std::vector<bool> zbuffer;
-  	    //zbuffer = Dozbuffer(cubes1, reference);
-
-
-		//for(auto& tr:cubes1.triangles)
-	//	{
-
-	//		RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2],zbuffer);
-
-		//	LineDDA(Coord(tr.tri[0].x, tr.tri[0].y), Coord(tr.tri[1].x, tr.tri[1].y));
-	//		LineDDA(Coord(tr.tri[1].x, tr.tri[1].y), Coord(tr.tri[2].x, tr.tri[2].y));
-	//		LineDDA(Coord(tr.tri[2].x, tr.tri[2].y), Coord(tr.tri[0].x, tr.tri[0].y));
-
-
-//		}
+        DoperspectiveMatrix(&vanishpoint, Block1_temp);
+        DoperspectiveMatrix(&vanishpoint, Block1_windows_temp);
+        DoperspectiveMatrix(&vanishpoint, Block1_door_temp);
+        DoperspectiveMatrix(&vanishpoint, Highway_temp);
+        DoperspectiveMatrix(&vanishpoint, Rotating_body1_temp);
+        DoperspectiveMatrix(&vanishpoint, Rotating_head1_temp);
+        DoperspectiveMatrix(&vanishpoint, Highwaystrips_temp);
+        DoperspectiveMatrix(&vanishpoint, Chair_temp);
+        DoperspectiveMatrix(&vanishpoint, Human_temp);
 
 
 		int n = 0;
-		for(auto& tr:cubes3.triangles)
+	    for(auto& tr:Block1_temp.triangles)
 		{
-		//	tCoord color = Dolighting(cube_m, light_m, tr, reference); 
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer,Color(color[n].x,color[n].y,color[n].z));
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(Block_Color[n].x,Block_Color[n].y,Block_Color[n].z));
 			++n;
-		//	RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer,Color(1.0f,0.0f,0.0f));
+		}		
+        for(auto& tr:Block1_windows_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 0.0f, 0.0f));
 		}
-
-		zbuffer.erase(zbuffer.begin(),zbuffer.end());
-		color.clear();
+		for(auto& tr:Block1_door_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 0.0f, 0.0f));
+		}
+		for(auto& tr:Highway_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(0.36f, 0.32f, 0.25f));
+		}
+		for(auto& tr:Rotating_body1_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(0.0f, 1.0f, 0.0f));
+		}
+		for(auto& tr:Rotating_head1_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 0.0f, 0.0f));
+		}
+		for(auto& tr:Highwaystrips_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 1.0f, 1.0f));
+		}
+		for(auto& tr:Chair_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(0.88f, 0.71f, 0.50f));
+		}
+		for(auto& tr:Human_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 0.8f, 0.60f));
+		}
+		//clear all the conatiners
+        zbuffer.erase(zbuffer.begin(),zbuffer.end());
+		Block_Color.clear();
         //MAIN ENDS HERE
         
         glfwSwapBuffers(window);
@@ -319,7 +587,6 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
         reference.z += 10;
-        
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
@@ -332,6 +599,29 @@ void processInput(GLFWwindow *window)
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
         reference.x -= 10;
+    }
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    {
+        //This increases the x-component of the vector 
+        if (angle < 3.14/2.0)
+        {
+            angle += 0.05;
+        }           
+        std::cout << angle << std::endl;
+        Nvector.z = cos(angle)*cos(angle);
+        Nvector.x = sin(angle)*sin(angle);
+    }
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+    {
+        //This increases the z-component of the vector
+        if (angle > 0)
+        {
+            angle -= 0.1;
+
+        }
+        std::cout << angle << std::endl;
+        Nvector.z = cos(angle)*cos(angle);
+        Nvector.x = sin(angle)*sin(angle);
     }
 }
 

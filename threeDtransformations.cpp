@@ -430,8 +430,8 @@ void DoperspectiveMatrix(tCoord *vanishpoint, cube& mesh)
 {
     float xwmin = 0;
     float ywmin = 0;
-    float xwmax = 100;
-    float ywmax = 100;
+    float xwmax = 200;
+    float ywmax = 200;
 
     float xrp = vanishpoint->x;
     float yrp = vanishpoint->y;
