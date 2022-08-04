@@ -16,7 +16,6 @@ tCoord Nvector(0,0,1);
 tCoord Vvector(0,1,0);
 tCoord vanishpoint(500,300,-1000);
 
-
 /*
 1) OpenGL takes in 3D coordinates and transfroms them into 2D pixels through the process of pipelining.
 2) The pipelining consists of small parallel programs called shaders:
@@ -435,9 +434,8 @@ int main()
     DoTranslateMatrix(410,0,0,Human);
 
 
-
-    //THE REFERENCE, NVECTOR AND VVECTOR ARE NOW GLOBAL
-    Angel::init(SCREEN_W, SCREEN_H);
+    
+   Angel::init(SCREEN_W, SCREEN_H);
 	std::unordered_map<std::string, float> zbuffer;
 
     int Humanposition = 0;
@@ -562,7 +560,9 @@ int main()
 		//clear all the conatiners
         zbuffer.erase(zbuffer.begin(),zbuffer.end());
 		Block_Color.clear();
-        //MAIN ENDS HERE
+
+
+    //MAIN ENDS HERE
         
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -586,19 +586,27 @@ void processInput(GLFWwindow *window)
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        reference.z += 10;
+        reference.z += 5;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        reference.z -= 10;
+        reference.z -= 5;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        reference.x += 10;
+        reference.x += 5;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        reference.x -= 10;
+        reference.x -= 5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        reference.y += 5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        reference.y -= 5;
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
     {

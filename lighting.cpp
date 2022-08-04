@@ -55,6 +55,7 @@ tCoord Dolighting(Material material, Light light, triangle& tr, tCoord cameraPos
 */ 	
 //	tCoord final = ambient + diffuse + specular ;
     tCoord final = ambient + diffuse;
+
 	return final;
 
 
