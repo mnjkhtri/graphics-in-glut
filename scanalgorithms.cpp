@@ -393,3 +393,4 @@ void RasterizeTriangle(tCoord vertices1, tCoord vertices2, tCoord vertices3,std:
 		}
 	}
 
+
