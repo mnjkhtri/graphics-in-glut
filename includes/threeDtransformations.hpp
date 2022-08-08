@@ -16,7 +16,7 @@ class tCoord
         tCoord(float, float, float, float);
 		float dot(tCoord);
 		tCoord operator * (tCoord);
-		tCoord operator* (float);
+		tCoord operator * (float);
 		tCoord operator + (tCoord);
 		tCoord operator - (tCoord);
 		tCoord cross(tCoord);
@@ -85,6 +85,5 @@ void DoRotateMatrix(float theta, tCoord axis,cube& mesh );
 std::vector<bool> DobackSurfacedetection(cube& mesh,tCoord cameraPosition=tCoord(0,0,0));
 
 //void Plotvertices(tCoord *coordinates,std::vector<bool>& zbuffer, int COUNT);
-
 
 #endif

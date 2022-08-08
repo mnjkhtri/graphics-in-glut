@@ -202,13 +202,46 @@ int main()
 
 		{tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0)},
 		{tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)},
+
+        //Second floor
+		{tCoord(0,100,0), tCoord(0,200,0), tCoord(100,200,0)},
+		{tCoord(0,100,0), tCoord(100,200,0), tCoord(100,100,0)},
+
+		{tCoord(100,100,0), tCoord(100,200,0), tCoord(100,200,100)},
+		{tCoord(100,100,0), tCoord(100,200,100), tCoord(100,100,100)},
+
+		{tCoord(100,100,100), tCoord(100,200,100), tCoord(0,200,100)},
+		{tCoord(100,100,100), tCoord(0,200,100), tCoord(0,100,100)},
+
+		{tCoord(0,100,100), tCoord(0,200,100), tCoord(0,200,0)},
+		{tCoord(0,100,100), tCoord(0,200,0), tCoord(0,100,0)},
+
+		{tCoord(0,200,0), tCoord(0,200,100), tCoord(100,200,100)},
+		{tCoord(0,200,0), tCoord(100,200,100), tCoord(100,200,0)},
+
+		{tCoord(100,100,100), tCoord(0,100,100), tCoord(0,100,0)},
+		{tCoord(100,100,100), tCoord(0,100,0), tCoord(100,100,0)},
+
+        //top floor
+        {tCoord{0,0+200,0}, tCoord{0,0+200,100}, tCoord{0,30+200,100}},
+        {tCoord{0,0+200,0}, tCoord{0,30+200,0}, tCoord{0,30+200,100}},
+
+        {tCoord{100,0+200,0}, tCoord{100,0+200,100}, tCoord{100,30+200,100}},
+        {tCoord{100,0+200,0}, tCoord{100,30+200,0}, tCoord{100,30+200,100}},
+
     };
     Block1_windows.triangles = 
     {
         {tCoord(100,60,10), tCoord(100,90,10), tCoord(100,90,40)},
         {tCoord(100,60,10), tCoord(100,90,40), tCoord(100,60,40)},
         {tCoord(100,60,60), tCoord(100,90,60), tCoord(100,90,90)},
-        {tCoord(100,60,60), tCoord(100,90,90), tCoord(100,60,90)}
+        {tCoord(100,60,60), tCoord(100,90,90), tCoord(100,60,90)},
+
+        //Second floor
+        {tCoord(100,60+100,10), tCoord(100,90+100,10), tCoord(100,90+100,40)},
+        {tCoord(100,60+100,10), tCoord(100,90+100,40), tCoord(100,60+100,40)},
+        {tCoord(100,60+100,60), tCoord(100,90+100,60), tCoord(100,90+100,90)},
+        {tCoord(100,60+100,60), tCoord(100,90+100,90), tCoord(100,60+100,90)}
     };
     Block1_door.triangles = 
     {
@@ -432,16 +465,12 @@ int main()
         {tCoord(-1,28,0), tCoord(-1,31,0), tCoord(6,31,0)}, 
     };
     DoTranslateMatrix(410,0,0,Human);
-
-
     
-   Angel::init(SCREEN_W, SCREEN_H);
+    Angel::init(SCREEN_W, SCREEN_H);
 	std::unordered_map<std::string, float> zbuffer;
 
     int Humanposition = 0;
     int direction = 1;
-
-
 
 	Material material;
 	material.ambient = tCoord(0.65f, 0.00f, 0.0f);
@@ -484,13 +513,13 @@ int main()
             direction = (-1)*direction;
         }
 
-		//lighting
+		// //lighting
 
-		for(auto& tr:Block1.triangles )
-		{
-			tCoord c = Dolighting(material, light, tr, reference);
-			Block_Color.push_back(c);
-		}
+		// for(auto& tr:Block1.triangles )
+		// {
+		// 	tCoord c = Dolighting(material, light, tr, reference);
+		// 	Block_Color.push_back(c);
+		// }
 
 
 
@@ -519,20 +548,19 @@ int main()
         DoperspectiveMatrix(&vanishpoint, Human_temp);
 
 
-		int n = 0;
+		//int n = 0;
 	    for(auto& tr:Block1_temp.triangles)
 		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(Block_Color[n].x,Block_Color[n].y,Block_Color[n].z));
-			++n;
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 0.0f, 0.0f));
 		}		
         for(auto& tr:Block1_windows_temp.triangles)
 		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 0.0f, 0.0f));
-		}
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 1.0f, 0.0f));
+		}	
 		for(auto& tr:Block1_door_temp.triangles)
 		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 0.0f, 0.0f));
-		}
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 1.0f, 0.0f));
+        }
 		for(auto& tr:Highway_temp.triangles)
 		{
 			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(0.36f, 0.32f, 0.25f));
