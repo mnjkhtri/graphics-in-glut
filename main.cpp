@@ -10,38 +10,25 @@
 #define SCREEN_W 2000
 #define SCREEN_H 1000
 
+int default_x = 200;
+int default_y = 0;
+int default_z = -10;
+int default_xx = 0;
+int default_yy = 0;
+int default_zz = 1;
+
 float angle = 0;
 tCoord reference(200,0,-10);
 tCoord Nvector(0,0,1);
 tCoord Vvector(0,1,0);
 tCoord vanishpoint(500,300,-1000);
 
-/*
-1) OpenGL takes in 3D coordinates and transfroms them into 2D pixels through the process of pipelining.
-2) The pipelining consists of small parallel programs called shaders:
-    a) Vertex Shader: a vertex (attributes) -> a processed vertex
-    b) Shape Assembly: 
-    c) Geometry Shader:
-    d) Rasterization:
-    e) Fragement Shader: 
-    f) Tests and Blending:
-Go to main now:
-*/
-//GLSL has data types called vec2, vec3 and vec4 which are 2, 3, and 4-component vector equivalent where each component is a GL_FLOAT
-//Version 330 corresponds to OpenGL 3.3
-
-//vertexShader will expect vertex attributes as input (in this case position; a vec3) and set up the predefined output variable (a vec4)
-//Set the layout of vec3 input variable 'aPos' at location 0
-//Set the predefined gl_Position using the input aPos
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
     "}\0";
-//vertexShader will expect at the location 0, a vec3 attribute
-
-//fragmentShader will create an output variable (a vec4) and initialize it with a color
 const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
     "void main()\n"
@@ -73,9 +60,6 @@ int main()
     }
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    //Program the required shaders and link them:
-
-    //Create a vertex shader
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     //Attach the source code to it
     glShaderSource(vertexShader,1,&vertexShaderSource,NULL);
@@ -122,350 +106,438 @@ int main()
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         printf("ERROR::SHADER::PROGRAM::LINKING_FAILED\n%s\n",infoLog);
     }
-    //Now longer need the original shader objects after linking them
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-    //Resulting is the shaderProgram final linked version of multiple shaders combined, later will activate it
 
-    //Send vertices to video memory at once
-    // float vertices[] = {
-    //     -0.5f, -0.5f, 0.0f,
-    //      0.5f, -0.5f, 0.0f,
-    //      0.0f,  0.5f, 0.0f 
-    // };
+    cube Sun;
+    Sun.triangles = 
+    {
+        {tCoord(10,0,0), tCoord(10,10,0), tCoord(10,10,10), Color(1,1,1)},
+		{tCoord(10,0,0), tCoord(10,10,10), tCoord(10,0,10), Color(1,1,1)},
 
-    // //OpenGL objects are construct that contains some state, when are bound to the context, they state they contain is mapped into context's state
-    // //>Buffer objects store an array of unformatted memory allocated by the OpenGL context; is bound with a target that specifies its use
-    //     //>GL_ARRAY_BUFFER target implies that buffer is to be used for vertex attribute data
-    // //>Vertex array objects store all of the state needed to supply vertex data; references the VBOs bound together with it
-    
-    // unsigned int VBO, VAO;
-    // //Generate the buffer ID
-    // glGenBuffers(1, &VBO);
-    // glGenVertexArrays(1, &VAO);
-    
-    // //Bind the VAO first
-    // glBindVertexArray(VAO);
-    // //Bind the VBO as GL_ARRAY_BUFFER
-    // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // //Now any calls on GL_ARRAY_BUFFER target will be used to configure VBO
+		{tCoord(10,0,10), tCoord(10,10,10), tCoord(0,10,10), Color(1,1,1)},
+		{tCoord(10,0,10), tCoord(0,10,10), tCoord(0,0,10), Color(1,1,1)},
 
-    // //To copy the vertex data into buffer's memory:
-    // //First Arg: the type of buffer we want to copy data into
-    // //Second Arg: size of the data
-    // //Third Arg: actual array of data
-    // //Fourth Arg: how graphics card manage the data; 
-    //     //GL_STATIC_DRAW: likely not change or very rarely
-    //     //GL_DYNAMIC_DRAW: likely to change a lot
-    //     //GL_STREAM_DRAW: change every time it is drawn
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		{tCoord(0,0,10), tCoord(0,10,10), tCoord(0,10,0), Color(1,1,1)},
+		{tCoord(0,0,10), tCoord(0,10,0), tCoord(0,0,0), Color(1,1,1)},
 
-    // //NOTE: Now that we have our shaders setup and our data into the memory: lets make a path to send that data into the shaders
+		{tCoord(0,10,0), tCoord(0,10,10), tCoord(10,10,10), Color(1,1,1)},
+		{tCoord(0,10,0), tCoord(10,10,10), tCoord(10,10,0), Color(1,1,1)},
 
-    // //Give knowledge on how to interpret the data when getting it from the currently bounded VAO:
+		{tCoord(10,0,10), tCoord(0,0,10), tCoord(0,0,0), Color(1,1,1)},
+		{tCoord(10,0,10), tCoord(0,0,0), tCoord(10,0,0), Color(1,1,1)},
+    };
+    DoTranslateMatrix(800,500,0,Sun);
 
-    // //First Arg: that the data will go to location 0
-    // //Second Arg: that the location 0 is to receive 3 values of ...
-    // //Third Arg: type GL_FLOAT
-    // //Forth Arg: not requring it to normalize
-    // //Fifth Arg: such that the next attribute will come after 3*sizeof(float)
-    // //Sixth Arg: starting from the offset (void*)0
-    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
-    // //Enable the vertex attribute giving the location as its argument
-    // glEnableVertexAttribArray(0);
-
-    // //NOTE: The VAO followed by VBO must be bound before we specify the format of the locations
-
-    // //Unbind the VBO for later use
-    // glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // //Unbind the VAO for later use
-    // glBindVertexArray(0);
-
-
-	cube Block1, Block1_windows, Block1_door;
+	cube Block1;
     Block1.triangles= 
     {
-		{tCoord(0,0,0), tCoord(0,100,0), tCoord(100,100,0)},
-		{tCoord(0,0,0), tCoord(100,100,0), tCoord(100,0,0)},
+		{tCoord(0,0,0), tCoord(0,100,0), tCoord(100,100,0), Color(0.79,0.25,0.32)},
+		{tCoord(0,0,0), tCoord(100,100,0), tCoord(100,0,0), Color(0.79,0.25,0.32)},
 
-		{tCoord(100,0,0), tCoord(100,100,0), tCoord(100,100,100)},
-		{tCoord(100,0,0), tCoord(100,100,100), tCoord(100,0,100)},
+        //Front face
+		{tCoord(100,0,0), tCoord(100,100,0), tCoord(100,100,100), Color(0.75,0.25,0.32)},
+		{tCoord(100,0,0), tCoord(100,100,100), tCoord(100,0,100), Color(0.75,0.25,0.32)},
 
-		{tCoord(100,0,100), tCoord(100,100,100), tCoord(0,100,100)},
-		{tCoord(100,0,100), tCoord(0,100,100), tCoord(0,0,100)},
+		{tCoord(100,0,100), tCoord(100,100,100), tCoord(0,100,100), Color(0.79,0.25,0.32)},
+		{tCoord(100,0,100), tCoord(0,100,100), tCoord(0,0,100), Color(0.79,0.25,0.32)},
 
-		{tCoord(0,0,100), tCoord(0,100,100), tCoord(0,100,0)},
-		{tCoord(0,0,100), tCoord(0,100,0), tCoord(0,0,0)},
+		{tCoord(0,0,100), tCoord(0,100,100), tCoord(0,100,0), Color(0.79,0.25,0.32)},
+		{tCoord(0,0,100), tCoord(0,100,0), tCoord(0,0,0), Color(0.79,0.25,0.32)},
 
-		{tCoord(0,100,0), tCoord(0,100,100), tCoord(100,100,100)},
-		{tCoord(0,100,0), tCoord(100,100,100), tCoord(100,100,0)},
+		{tCoord(0,100,0), tCoord(0,100,100), tCoord(100,100,100), Color(0.79,0.25,0.32)},
+		{tCoord(0,100,0), tCoord(100,100,100), tCoord(100,100,0), Color(0.79,0.25,0.32)},
 
-		{tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0)},
-		{tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0)},
-
-        //Second floor
-		{tCoord(0,100,0), tCoord(0,200,0), tCoord(100,200,0)},
-		{tCoord(0,100,0), tCoord(100,200,0), tCoord(100,100,0)},
-
-		{tCoord(100,100,0), tCoord(100,200,0), tCoord(100,200,100)},
-		{tCoord(100,100,0), tCoord(100,200,100), tCoord(100,100,100)},
-
-		{tCoord(100,100,100), tCoord(100,200,100), tCoord(0,200,100)},
-		{tCoord(100,100,100), tCoord(0,200,100), tCoord(0,100,100)},
-
-		{tCoord(0,100,100), tCoord(0,200,100), tCoord(0,200,0)},
-		{tCoord(0,100,100), tCoord(0,200,0), tCoord(0,100,0)},
-
-		{tCoord(0,200,0), tCoord(0,200,100), tCoord(100,200,100)},
-		{tCoord(0,200,0), tCoord(100,200,100), tCoord(100,200,0)},
-
-		{tCoord(100,100,100), tCoord(0,100,100), tCoord(0,100,0)},
-		{tCoord(100,100,100), tCoord(0,100,0), tCoord(100,100,0)},
-
-        //top floor
-        {tCoord{0,0+200,0}, tCoord{0,0+200,100}, tCoord{0,30+200,100}},
-        {tCoord{0,0+200,0}, tCoord{0,30+200,0}, tCoord{0,30+200,100}},
-
-        {tCoord{100,0+200,0}, tCoord{100,0+200,100}, tCoord{100,30+200,100}},
-        {tCoord{100,0+200,0}, tCoord{100,30+200,0}, tCoord{100,30+200,100}},
-
-    };
-    Block1_windows.triangles = 
-    {
-        {tCoord(100,60,10), tCoord(100,90,10), tCoord(100,90,40)},
-        {tCoord(100,60,10), tCoord(100,90,40), tCoord(100,60,40)},
-        {tCoord(100,60,60), tCoord(100,90,60), tCoord(100,90,90)},
-        {tCoord(100,60,60), tCoord(100,90,90), tCoord(100,60,90)},
+		{tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0), Color(0.79,0.25,0.32)},
+		{tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0), Color(0.79,0.25,0.32)},
 
         //Second floor
-        {tCoord(100,60+100,10), tCoord(100,90+100,10), tCoord(100,90+100,40)},
-        {tCoord(100,60+100,10), tCoord(100,90+100,40), tCoord(100,60+100,40)},
-        {tCoord(100,60+100,60), tCoord(100,90+100,60), tCoord(100,90+100,90)},
-        {tCoord(100,60+100,60), tCoord(100,90+100,90), tCoord(100,60+100,90)}
+        {tCoord{0+100,115+0,0}, tCoord{10+100,110+0,0}, tCoord{0+100,115+0,100}, Color(0.59,0.25,0.32)},
+        {tCoord{10+100,110+0,0}, tCoord{0+100,115+0,100}, tCoord{10+100,110+0,100}, Color(0.59,0.25,0.32)},
+        //Actual second floor
+
+		{tCoord(0,100,0), tCoord(0,200,0), tCoord(100,200,0), Color(0.79,0.25,0.32)},
+		{tCoord(0,100,0), tCoord(100,200,0), tCoord(100,100,0), Color(0.79,0.25,0.32)},
+
+		{tCoord(100,100,0), tCoord(100,200,0), tCoord(100,200,100), Color(0.75,0.25,0.32)},
+		{tCoord(100,100,0), tCoord(100,200,100), tCoord(100,100,100), Color(0.75,0.25,0.32)},
+
+		{tCoord(100,100,100), tCoord(100,200,100), tCoord(0,200,100), Color(0.79,0.25,0.32)},
+		{tCoord(100,100,100), tCoord(0,200,100), tCoord(0,100,100), Color(0.79,0.25,0.32)},
+
+		{tCoord(0,100,100), tCoord(0,200,100), tCoord(0,200,0), Color(0.79,0.25,0.32)},
+		{tCoord(0,100,100), tCoord(0,200,0), tCoord(0,100,0), Color(0.79,0.25,0.32)},
+
+		{tCoord(0,200,0), tCoord(0,200,100), tCoord(100,200,100), Color(0.79,0.25,0.32)},
+	    {tCoord(0,200,0), tCoord(100,200,100), tCoord(100,200,0), Color(0.79,0.25,0.32)},
+
+		{tCoord(100,100,100), tCoord(0,100,100), tCoord(0,100,0), Color(0.79,0.25,0.32)},
+		{tCoord(100,100,100), tCoord(0,100,0), tCoord(100,100,0), Color(0.79,0.25,0.32)},
+
+         //top floor
+        {tCoord{0,0+200,0}, tCoord{0,0+200,100}, tCoord{0,30+200,100}, Color(0.63,0.32,0.34)},
+        {tCoord{0,0+200,0}, tCoord{0,30+200,0}, tCoord{0,30+200,100}, Color(0.63,0.33,0.34)},
+
+        {tCoord{100,0+200,0}, tCoord{100,0+200,100}, tCoord{100,30+200,100}, Color(0.63,0.33,0.34)},
+        {tCoord{100,0+200,0}, tCoord{100,30+200,0}, tCoord{100,30+200,100}, Color(0.63,0.33,0.34)},
+
+        {tCoord(0,200+0,0), tCoord(100,200+0,0), tCoord(0,200+30,0), Color(0.63,0.33,0.34)},
+        {tCoord(0,200+30,0), tCoord(100,200+30,0), tCoord(100,200+0,0), Color(0.63,0.33,0.34)},
+
+        {tCoord(0,200+0,100), tCoord(100,200+0,100), tCoord(0,200+30,100), Color(0.63,0.33,0.34)},
+        {tCoord(0,200+30,100), tCoord(100,200+30,100), tCoord(100,200+0,100), Color(0.63,0.33,0.34)},
+
+        //Windows:
+        {tCoord(100,60,10), tCoord(100,90,10), tCoord(100,90,40), Color(0.78,0.72,0.89)},
+        {tCoord(100,60,10), tCoord(100,90,40), tCoord(100,60,40), Color(0.78,0.72,0.89)},
+        {tCoord(100,60,60), tCoord(100,90,60), tCoord(100,90,90), Color(0.78,0.72,0.89)},
+        {tCoord(100,60,60), tCoord(100,90,90), tCoord(100,60,90), Color(0.78,0.72,0.89)},
+
+        //Second floor
+        {tCoord(100,60+90,10), tCoord(100,90+90,10), tCoord(100,90+90,40), Color(0.78,0.72,0.89)},
+        {tCoord(100,60+90,10), tCoord(100,90+90,40), tCoord(100,60+90,40), Color(0.78,0.72,0.89)},
+        {tCoord(100,60+90,60), tCoord(100,90+90,60), tCoord(100,90+90,90), Color(0.78,0.72,0.89)},
+        {tCoord(100,60+90,60), tCoord(100,90+90,90), tCoord(100,60+90,90), Color(0.78,0.72,0.89)},
+
+
+        //Door
+        {tCoord(100,0,40), tCoord(100,50,40), tCoord(100,50,60), Color(0.79,0.5,0.34)},
+        {tCoord(100,50,60), tCoord(100,0,60), tCoord(100,0,40), Color(0.79,0.5,0.34)},
+        {tCoord(100,0,40), tCoord(100,50,40), tCoord(100,50,60), Color(0.79,0.5,0.34)},
+        {tCoord(100,50,60), tCoord(100,0,60), tCoord(100,0,40), Color(0.79,0.5,0.34)},
     };
-    Block1_door.triangles = 
+
+    cube Block2 = Block1;
+    DoTranslateMatrix(0,0,1200,Block2);
+
+    cube Block3;
+    Block3.triangles= 
     {
-        {tCoord(100,0,40), tCoord(100,50,40), tCoord(100,50,60)},
-        {tCoord(100,50,60), tCoord(100,0,60), tCoord(100,0,40)},
-        {tCoord(100,0,40), tCoord(100,50,40), tCoord(100,50,60)},
-        {tCoord(100,50,60), tCoord(100,0,60), tCoord(100,0,40)},
+		{tCoord(0,0,0), tCoord(0,100,0), tCoord(100,100,0), Color(0.79,0.25,0.32)},
+		{tCoord(0,0,0), tCoord(100,100,0), tCoord(100,0,0), Color(0.79,0.25,0.32)},
+
+		{tCoord(100,0,0), tCoord(100,100,0), tCoord(100,100,100), Color(0.79,0.25,0.32)},
+		{tCoord(100,0,0), tCoord(100,100,100), tCoord(100,0,100), Color(0.79,0.25,0.32)},
+
+		{tCoord(100,0,100), tCoord(100,100,100), tCoord(0,100,100), Color(0.79,0.25,0.32)},
+		{tCoord(100,0,100), tCoord(0,100,100), tCoord(0,0,100), Color(0.79,0.25,0.32)},
+
+		{tCoord(0,0,100), tCoord(0,100,100), tCoord(0,100,0), Color(0.79,0.25,0.32)},
+		{tCoord(0,0,100), tCoord(0,100,0), tCoord(0,0,0), Color(0.79,0.25,0.32)},
+
+		{tCoord(0,100,0), tCoord(0,100,100), tCoord(100,100,100), Color(0.79,0.25,0.32)},
+		{tCoord(0,100,0), tCoord(100,100,100), tCoord(100,100,0), Color(0.79,0.25,0.32)},
+
+		{tCoord(100,0,100), tCoord(0,0,100), tCoord(0,0,0), Color(0.79,0.25,0.32)},
+		{tCoord(100,0,100), tCoord(0,0,0), tCoord(100,0,0), Color(0.79,0.25,0.32)},
+
+        //Windows:
+        {tCoord(100,60,10), tCoord(100,90,10), tCoord(100,90,40), Color(0.78,0.72,0.89)},
+        {tCoord(100,60,10), tCoord(100,90,40), tCoord(100,60,40), Color(0.78,0.72,0.89)},
+        {tCoord(100,60,60), tCoord(100,90,60), tCoord(100,90,90), Color(0.78,0.72,0.89)},
+        {tCoord(100,60,60), tCoord(100,90,90), tCoord(100,60,90), Color(0.78,0.72,0.89)},
+
+        //Door
+        {tCoord(100,0,40), tCoord(100,50,40), tCoord(100,50,60), Color(0.79,0.5,0.34)},
+        {tCoord(100,50,60), tCoord(100,0,60), tCoord(100,0,40), Color(0.79,0.5,0.34)},
+        {tCoord(100,0,40), tCoord(100,50,40), tCoord(100,50,60), Color(0.79,0.5,0.34)},
+        {tCoord(100,50,60), tCoord(100,0,60), tCoord(100,0,40), Color(0.79,0.5,0.34)},
+
+        //Roof
+        {tCoord(0,100,0), tCoord(0,100,100), tCoord(50,50+100,50), Color(0.63,0.32,0.34)},
+        {tCoord(0,100,0), tCoord(100,100,0), tCoord(50,50+100,50), Color(0.63,0.32,0.34)},
+        {tCoord(100,100,0), tCoord(100,100,100), tCoord(50,50+100,50), Color(0.63,0.32,0.34)},
+        {tCoord(0,100,100), tCoord(100,100,100), tCoord(50,50+100,50), Color(0.63,0.32,0.34)},
     };
+    DoTranslateMatrix(0,0,1000,Block3);
+
+    cube Block4 = Block3;
+    DoTranslateMatrix(0,0,1100,Block4);
 
     cube Highway;
     Highway.triangles = 
     {
-        {tCoord(150,0,0), tCoord(500,0,0), tCoord(150,0,5000)},
-        {tCoord(500,0,0), tCoord(150,0,5000), tCoord(500,0,5000)},
-    };
-    //LENGTH IS FROM 0 TO 1000, WIDTH FROM 150 to 500
+        //SOILS
+        {tCoord(0,0,0), tCoord(150,0,0), tCoord(0,0,3500), Color(0.6,0.46,0.325)},
+        {tCoord(150,0,0), tCoord(0,0,3500), tCoord(150,0,3500), Color(0.6,0.46,0.325)},
 
-    cube Highwaystrips;
-    Highwaystrips.triangles =
-    {
-        {tCoord(300,0,0), tCoord(320,0,0), tCoord(300,0,100)},
-        {tCoord(320,0,0), tCoord(300,0,100), tCoord(320,0,100)},
-        {tCoord(300,0,150+0), tCoord(320,0,150+0), tCoord(300,0,150+100)},
-        {tCoord(320,0,150+0), tCoord(300,0,150+100), tCoord(320,0,150+100)},
-        {tCoord(300,0,150+150+0), tCoord(320,0,150+150+0), tCoord(300,0,150+150+100)},
-        {tCoord(320,0,150+150+0), tCoord(300,0,150+150+100), tCoord(320,0,150+150+100)},
-        {tCoord(300,0,150+150+150+0), tCoord(320,0,150+150+150+0), tCoord(300,0,150+150+150+100)},
-        {tCoord(320,0,150+150+150+0), tCoord(300,0,150+150+150+100), tCoord(320,0,150+150+150+100)},
-        {tCoord(300,0,150+150+150+150+0), tCoord(320,0,150+150+150+150+0), tCoord(300,0,150+150+150+150+100)},
-        {tCoord(320,0,150+150+150+150+0), tCoord(300,0,150+150+150+150+100), tCoord(320,0,150+150+150+150+100)},
-        {tCoord(300,0,150+150+150+150+150+0), tCoord(320,0,150+150+150+150+150+0), tCoord(300,0,150+150+150+150+150+100)},
-        {tCoord(320,0,150+150+150+150+150+0), tCoord(300,0,150+150+150+150+150+100), tCoord(320,0,150+150+150+150+150+100)},
+        //SOILS ON RIGHT
+        {tCoord(500,0,0), tCoord(650,0,0), tCoord(500,0,3500), Color(0.6,0.46,0.325)},
+        {tCoord(650,0,0), tCoord(500,0,3500), tCoord(650,0,3500), Color(0.6,0.46,0.325)},
+
+        //HIGHWAY
+        {tCoord(150,0,0), tCoord(500,0,0), tCoord(150,0,3500), Color(0.36,0.32,0.25)},
+        {tCoord(500,0,0), tCoord(150,0,3500), tCoord(500,0,3500), Color(0.36,0.32,0.25)},
+
+
+        {tCoord(300,0,0), tCoord(320,0,0), tCoord(300,0,100), Color(1.0,1.0,1.0)},
+        {tCoord(320,0,0), tCoord(300,0,100), tCoord(320,0,100), Color(1.0,1.0,1.0)},
+
+        {tCoord(300,0,150+0), tCoord(320,0,150+0), tCoord(300,0,150+100), Color(1.0,1.0,1.0)},
+        {tCoord(320,0,150+0), tCoord(300,0,150+100), tCoord(320,0,150+100), Color(1.0,1.0,1.0)},
+
+        {tCoord(300,0,150+150+0), tCoord(320,0,150+150+0), tCoord(300,0,150+150+100), Color(1.0,1.0,1.0)},
+        {tCoord(320,0,150+150+0), tCoord(300,0,150+150+100), tCoord(320,0,150+150+100), Color(1.0,1.0,1.0)},
+
+        {tCoord(300,0,150+150+150+0), tCoord(320,0,150+150+150+0), tCoord(300,0,150+150+150+100), Color(1.0,1.0,1.0)},
+        {tCoord(320,0,150+150+150+0), tCoord(300,0,150+150+150+100), tCoord(320,0,150+150+150+100), Color(1.0,1.0,1.0)},
+
+        {tCoord(300,0,150+150+150+150+0), tCoord(320,0,150+150+150+150+0), tCoord(300,0,150+150+150+150+100), Color(1.0,1.0,1.0)},
+        {tCoord(320,0,150+150+150+150+0), tCoord(300,0,150+150+150+150+100), tCoord(320,0,150+150+150+150+100), Color(1.0,1.0,1.0)},
+
+        {tCoord(300,0,150+150+150+150+150+0), tCoord(320,0,150+150+150+150+150+0), tCoord(300,0,150+150+150+150+150+100), Color(1.0,1.0,1.0)},
+        {tCoord(320,0,150+150+150+150+150+0), tCoord(300,0,150+150+150+150+150+100), tCoord(320,0,150+150+150+150+150+100), Color(1.0,1.0,1.0)},
+
+        {tCoord(300,0,150+150+150+150+150+150+0), tCoord(320,0,150+150+150+150+150+150+0), tCoord(300,0,150+150+150+150+150+150+100), Color(1.0,1.0,1.0)},
+        {tCoord(320,0,150+150+150+150+150+150+0), tCoord(300,0,150+150+150+150+150+150+100), tCoord(320,0,150+150+150+150+150+150+100), Color(1.0,1.0,1.0)},
+
+        {tCoord(300,0,150+150+150+150+150+150+150+0), tCoord(320,0,150+150+150+150+150+150+150+0), tCoord(300,0,150+150+150+150+150+150+150+100), Color(1.0,1.0,1.0)},
+        {tCoord(320,0,150+150+150+150+150+150+150+0), tCoord(300,0,150+150+150+150+150+150+150+100), tCoord(320,0,150+150+150+150+150+150+150+100), Color(1.0,1.0,1.0)},
+
+        {tCoord(300,0,1200+0), tCoord(320,0,1200+0), tCoord(300,0,1200+100), Color(1.0,1.0,1.0)},
+        {tCoord(320,0,1200+0), tCoord(300,0,1200+100), tCoord(320,0,1200+100), Color(1.0,1.0,1.0)},
     };
 
     cube Rotating_body1;
     Rotating_body1.triangles = 
     {
-		{tCoord(0,0,0), tCoord(0,100,0), tCoord(1,100,0)},
-		{tCoord(0,0,0), tCoord(1,100,0), tCoord(1,0,0)},
+		{tCoord(0,0,0), tCoord(0,100,0), tCoord(1,100,0),Color(0.0f,0.0f,1.0f)},
+		{tCoord(0,0,0), tCoord(1,100,0), tCoord(1,0,0),Color(0.0f,0.0f,1.0f)},
 
-		{tCoord(1,0,0), tCoord(1,100,0), tCoord(1,100,1)},
-		{tCoord(1,0,0), tCoord(1,100,1), tCoord(1,0,1)},
+		{tCoord(1,0,0), tCoord(1,100,0), tCoord(1,100,1),Color(0.0f,0.0f,1.0f)},
+		{tCoord(1,0,0), tCoord(1,100,1), tCoord(1,0,1),Color(0.0f,0.0f,1.0f)},
 
-		{tCoord(1,0,1), tCoord(1,100,1), tCoord(0,100,1)},
-		{tCoord(1,0,1), tCoord(0,100,1), tCoord(0,0,1)},
+		{tCoord(1,0,1), tCoord(1,100,1), tCoord(0,100,1),Color(0.0f,0.0f,1.0f)},
+		{tCoord(1,0,1), tCoord(0,100,1), tCoord(0,0,1),Color(0.0f,0.0f,1.0f)},
 
-		{tCoord(0,0,1), tCoord(0,100,1), tCoord(0,100,0)},
-		{tCoord(0,0,1), tCoord(0,100,0), tCoord(0,0,0)},
+		{tCoord(0,0,1), tCoord(0,100,1), tCoord(0,100,0),Color(0.0f,0.0f,1.0f)},
+		{tCoord(0,0,1), tCoord(0,100,0), tCoord(0,0,0),Color(0.0f,0.0f,1.0f)},
 
-		{tCoord(0,100,0), tCoord(0,100,1), tCoord(1,100,1)},
-		{tCoord(0,100,0), tCoord(1,100,1), tCoord(1,100,0)},
+		{tCoord(0,100,0), tCoord(0,100,1), tCoord(1,100,1),Color(0.0f,0.0f,1.0f)},
+		{tCoord(0,100,0), tCoord(1,100,1), tCoord(1,100,0),Color(0.0f,0.0f,1.0f)},
 
-		{tCoord(1,0,1), tCoord(0,0,1), tCoord(0,0,0)},
-		{tCoord(1,0,1), tCoord(0,0,0), tCoord(1,0,0)},
+		{tCoord(1,0,1), tCoord(0,0,1), tCoord(0,0,0),Color(0.0f,0.0f,1.0f)},
+		{tCoord(1,0,1), tCoord(0,0,0), tCoord(1,0,0),Color(0.0f,0.0f,1.0f)},
+
+        //Head:
+        {tCoord(5,100,0), tCoord(5,70,0), tCoord(5,70,20), Color(1.0f,0.0f,0.0f)},
+        {tCoord(5,70,0), tCoord(5,40,0), tCoord(5,40,20), Color(1.0f,0.0f,0.0f)},
     };
-    DoTranslateMatrix(100,0,120,Rotating_body1);
-
-    cube Rotating_head1;
-    Rotating_head1.triangles = 
-    {
-        {tCoord(5,100,0), tCoord(5,70,0), tCoord(5,70,20)},
-        {tCoord(5,70,0), tCoord(5,40,0), tCoord(5,40,20)},
-    };
-    DoTranslateMatrix(100,0,120,Rotating_head1);
+    DoTranslateMatrix(90,200,90,Rotating_body1);
 
     cube Chair;
     Chair.triangles =
     {
         //First leg:
-		{tCoord(0,0,0), tCoord(0,20,0), tCoord(1,20,0)},
-		{tCoord(0,0,0), tCoord(1,20,0), tCoord(1,0,0)},
+		{tCoord(0,0,0), tCoord(0,20,0), tCoord(1,20,0), Color(0.62,0.54,0.46)},
+		{tCoord(0,0,0), tCoord(1,20,0), tCoord(1,0,0), Color(0.62,0.54,0.46)},
 
-		{tCoord(1,0,0), tCoord(1,20,0), tCoord(1,20,1)},
-		{tCoord(1,0,0), tCoord(1,20,1), tCoord(1,0,1)},
+		{tCoord(1,0,0), tCoord(1,20,0), tCoord(1,20,1), Color(0.62,0.54,0.46)},
+		{tCoord(1,0,0), tCoord(1,20,1), tCoord(1,0,1), Color(0.62,0.54,0.46)},
 
-		{tCoord(1,0,1), tCoord(1,20,1), tCoord(0,20,1)},
-		{tCoord(1,0,1), tCoord(0,20,1), tCoord(0,0,1)},
+		{tCoord(1,0,1), tCoord(1,20,1), tCoord(0,20,1), Color(0.62,0.54,0.46)},
+		{tCoord(1,0,1), tCoord(0,20,1), tCoord(0,0,1), Color(0.62,0.54,0.46)},
 
-		{tCoord(0,0,1), tCoord(0,20,1), tCoord(0,20,0)},
-		{tCoord(0,0,1), tCoord(0,20,0), tCoord(0,0,0)},
+		{tCoord(0,0,1), tCoord(0,20,1), tCoord(0,20,0), Color(0.62,0.54,0.46)},
+		{tCoord(0,0,1), tCoord(0,20,0), tCoord(0,0,0), Color(0.62,0.54,0.46)},
 
-		{tCoord(0,20,0), tCoord(0,20,1), tCoord(1,20,1)},
-		{tCoord(0,20,0), tCoord(1,20,1), tCoord(1,20,0)},
+		{tCoord(0,20,0), tCoord(0,20,1), tCoord(1,20,1), Color(0.62,0.54,0.46)},
+		{tCoord(0,20,0), tCoord(1,20,1), tCoord(1,20,0), Color(0.62,0.54,0.46)},
 
-		{tCoord(1,0,1), tCoord(0,0,1), tCoord(0,0,0)},
-		{tCoord(1,0,1), tCoord(0,0,0), tCoord(1,0,0)},
+		{tCoord(1,0,1), tCoord(0,0,1), tCoord(0,0,0), Color(0.62,0.54,0.46)},
+		{tCoord(1,0,1), tCoord(0,0,0), tCoord(1,0,0), Color(0.62,0.54,0.46)},
 
         //Second
-		{tCoord(20,0,0), tCoord(20,20,0), tCoord(21,20,0)},
-		{tCoord(20,0,0), tCoord(21,20,0), tCoord(21,0,0)},
+		{tCoord(20,0,0), tCoord(20,20,0), tCoord(21,20,0), Color(0.62,0.54,0.46)},
+		{tCoord(20,0,0), tCoord(21,20,0), tCoord(21,0,0), Color(0.62,0.54,0.46)},
 
-		{tCoord(21,0,0), tCoord(21,20,0), tCoord(21,20,1)},
-		{tCoord(21,0,0), tCoord(21,20,1), tCoord(21,0,1)},
+		{tCoord(21,0,0), tCoord(21,20,0), tCoord(21,20,1), Color(0.62,0.54,0.46)},
+		{tCoord(21,0,0), tCoord(21,20,1), tCoord(21,0,1), Color(0.62,0.54,0.46)},
 
-		{tCoord(21,0,1), tCoord(21,20,1), tCoord(20,20,1)},
-		{tCoord(21,0,1), tCoord(20,20,1), tCoord(20,0,1)},
+		{tCoord(21,0,1), tCoord(21,20,1), tCoord(20,20,1), Color(0.62,0.54,0.46)},
+		{tCoord(21,0,1), tCoord(20,20,1), tCoord(20,0,1), Color(0.62,0.54,0.46)},
 
-		{tCoord(20,0,1), tCoord(20,20,1), tCoord(20,20,0)},
-		{tCoord(20,0,1), tCoord(20,20,0), tCoord(20,0,0)},
+		{tCoord(20,0,1), tCoord(20,20,1), tCoord(20,20,0), Color(0.62,0.54,0.46)},
+		{tCoord(20,0,1), tCoord(20,20,0), tCoord(20,0,0), Color(0.62,0.54,0.46)},
 
-		{tCoord(20,20,0), tCoord(20,20,1), tCoord(21,20,1)},
-		{tCoord(20,20,0), tCoord(21,20,1), tCoord(21,20,0)},
+		{tCoord(20,20,0), tCoord(20,20,1), tCoord(21,20,1), Color(0.62,0.54,0.46)},
+		{tCoord(20,20,0), tCoord(21,20,1), tCoord(21,20,0), Color(0.62,0.54,0.46)},
 
-		{tCoord(21,0,1), tCoord(20,0,1), tCoord(20,0,0)},
-		{tCoord(21,0,1), tCoord(20,0,0), tCoord(21,0,0)},
+		{tCoord(21,0,1), tCoord(20,0,1), tCoord(20,0,0), Color(0.62,0.54,0.46)},
+		{tCoord(21,0,1), tCoord(20,0,0), tCoord(21,0,0), Color(0.62,0.54,0.46)},
 
         //First leg:
-		{tCoord(0,0,30), tCoord(0,20,30), tCoord(1,20,30)},
-		{tCoord(0,0,30), tCoord(1,20,30), tCoord(1,0,30)},
+		{tCoord(0,0,30), tCoord(0,20,30), tCoord(1,20,30), Color(0.62,0.54,0.46)},
+		{tCoord(0,0,30), tCoord(1,20,30), tCoord(1,0,30), Color(0.62,0.54,0.46)},
 
-		{tCoord(1,0,30), tCoord(1,20,30), tCoord(1,20,31)},
-		{tCoord(1,0,30), tCoord(1,20,31), tCoord(1,0,31)},
+		{tCoord(1,0,30), tCoord(1,20,30), tCoord(1,20,31), Color(0.62,0.54,0.46)},
+		{tCoord(1,0,30), tCoord(1,20,31), tCoord(1,0,31), Color(0.62,0.54,0.46)},
 
-		{tCoord(1,0,31), tCoord(1,20,31), tCoord(0,20,31)},
-		{tCoord(1,0,31), tCoord(0,20,31), tCoord(0,0,31)},
+		{tCoord(1,0,31), tCoord(1,20,31), tCoord(0,20,31), Color(0.62,0.54,0.46)},
+		{tCoord(1,0,31), tCoord(0,20,31), tCoord(0,0,31), Color(0.62,0.54,0.46)},
 
-		{tCoord(0,0,31), tCoord(0,20,31), tCoord(0,20,30)},
-		{tCoord(0,0,31), tCoord(0,20,30), tCoord(0,0,30)},
+		{tCoord(0,0,31), tCoord(0,20,31), tCoord(0,20,30), Color(0.62,0.54,0.46)},
+		{tCoord(0,0,31), tCoord(0,20,30), tCoord(0,0,30), Color(0.62,0.54,0.46)},
 
-		{tCoord(0,20,30), tCoord(0,20,31), tCoord(1,20,31)},
-		{tCoord(0,20,30), tCoord(1,20,31), tCoord(1,20,30)},
+		{tCoord(0,20,30), tCoord(0,20,31), tCoord(1,20,31), Color(0.62,0.54,0.46)},
+		{tCoord(0,20,30), tCoord(1,20,31), tCoord(1,20,30), Color(0.62,0.54,0.46)},
 
-		{tCoord(1,0,31), tCoord(0,0,31), tCoord(0,0,30)},
-		{tCoord(1,0,31), tCoord(0,0,30), tCoord(1,0,30)},
+		{tCoord(1,0,31), tCoord(0,0,31), tCoord(0,0,30), Color(0.62,0.54,0.46)},
+		{tCoord(1,0,31), tCoord(0,0,30), tCoord(1,0,30), Color(0.62,0.54,0.46)},
 
         //Final
-        {tCoord(20,0,30), tCoord(20,20,30), tCoord(21,20,30)},
-		{tCoord(20,0,30), tCoord(21,20,30), tCoord(21,0,30)},
+        {tCoord(20,0,30), tCoord(20,20,30), tCoord(21,20,30), Color(0.62,0.54,0.46)},
+		{tCoord(20,0,30), tCoord(21,20,30), tCoord(21,0,30), Color(0.62,0.54,0.46)},
 
-		{tCoord(21,0,30), tCoord(21,20,30), tCoord(21,20,31)},
-		{tCoord(21,0,30), tCoord(21,20,31), tCoord(21,0,31)},
+		{tCoord(21,0,30), tCoord(21,20,30), tCoord(21,20,31), Color(0.62,0.54,0.46)},
+		{tCoord(21,0,30), tCoord(21,20,31), tCoord(21,0,31), Color(0.62,0.54,0.46)},
 
-		{tCoord(21,0,31), tCoord(21,20,31), tCoord(20,20,31)},
-		{tCoord(21,0,31), tCoord(20,20,31), tCoord(20,0,31)},
+		{tCoord(21,0,31), tCoord(21,20,31), tCoord(20,20,31), Color(0.62,0.54,0.46)},
+		{tCoord(21,0,31), tCoord(20,20,31), tCoord(20,0,31), Color(0.62,0.54,0.46)},
 
-		{tCoord(20,0,31), tCoord(20,20,31), tCoord(20,20,30)},
-		{tCoord(20,0,31), tCoord(20,20,30), tCoord(20,0,30)},
+		{tCoord(20,0,31), tCoord(20,20,31), tCoord(20,20,30), Color(0.62,0.54,0.46)},
+		{tCoord(20,0,31), tCoord(20,20,30), tCoord(20,0,30), Color(0.62,0.54,0.46)},
 
-		{tCoord(20,20,30), tCoord(20,20,31), tCoord(21,20,31)},
-		{tCoord(20,20,30), tCoord(21,20,31), tCoord(21,20,30)},
+		{tCoord(20,20,30), tCoord(20,20,31), tCoord(21,20,31), Color(0.62,0.54,0.46)},
+		{tCoord(20,20,30), tCoord(21,20,31), tCoord(21,20,30), Color(0.62,0.54,0.46)},
 
-		{tCoord(21,0,31), tCoord(20,0,31), tCoord(20,0,30)},
-		{tCoord(21,0,31), tCoord(20,0,30), tCoord(21,0,30)},
+		{tCoord(21,0,31), tCoord(20,0,31), tCoord(20,0,30), Color(0.62,0.54,0.46)},
+		{tCoord(21,0,31), tCoord(20,0,30), tCoord(21,0,30), Color(0.62,0.54,0.46)},
 
 
         //Body
-        {tCoord(0,20,0), tCoord(20,20,0), tCoord(20,20,30)},
-		{tCoord(0,20,0), tCoord(0,20,30), tCoord(20,20,30)},
+        {tCoord(0,20,0), tCoord(20,20,0), tCoord(20,20,30), Color(0.88,0.73,0.36)},
+		{tCoord(0,20,0), tCoord(0,20,30), tCoord(20,20,30), Color(0.88,0.73,0.36)},
 
-        {tCoord(20,20,0), tCoord(20,20,30), tCoord(25,40,30)},
-		{tCoord(25,40,30), tCoord(25,40,0), tCoord(20,20,0)},
+        {tCoord(20,20,0), tCoord(20,20,30), tCoord(25,40,30), Color(0.62,0.74,0.56)},
+		{tCoord(25,40,30), tCoord(25,40,0), tCoord(20,20,0), Color(0.62,0.74,0.56)},
     };
-    DoTranslateMatrix(540,0,0,Chair);
+    cube Chair2 = Chair;
+    cube Chair3 = Chair;
+    DoRotateMatrix(270,tCoord(0,1,0),Chair2);
+    DoRotateMatrix(180,tCoord(0,1,0),Chair3);
+    DoTranslateMatrix(600,0,100,Chair);
+    DoTranslateMatrix(580,0,200,Chair2);
+    DoTranslateMatrix(540,0,130,Chair3);
 
     cube Human;
     Human.triangles =
     {
         //Firt leg
-        {tCoord(0,0,0), tCoord(0,10,0), tCoord(1,10,0)},
-		{tCoord(0,0,0), tCoord(1,10,0), tCoord(1,0,0)},
+        {tCoord(0,0,0), tCoord(0,10,0), tCoord(1,10,0), Color(0.98,0.85,0.6)},
+		{tCoord(0,0,0), tCoord(1,10,0), tCoord(1,0,0), Color(0.98,0.85,0.6)},
 
-		{tCoord(1,0,0), tCoord(1,10,0), tCoord(1,10,1)},
-		{tCoord(1,0,0), tCoord(1,10,1), tCoord(1,0,1)},
+		{tCoord(1,0,0), tCoord(1,10,0), tCoord(1,10,1), Color(0.98,0.85,0.6)},
+		{tCoord(1,0,0), tCoord(1,10,1), tCoord(1,0,1), Color(0.98,0.85,0.6)},
 
-		{tCoord(1,0,1), tCoord(1,10,1), tCoord(0,10,1)},
-		{tCoord(1,0,1), tCoord(0,10,1), tCoord(0,0,1)},
+		{tCoord(1,0,1), tCoord(1,10,1), tCoord(0,10,1), Color(0.98,0.85,0.6)},
+		{tCoord(1,0,1), tCoord(0,10,1), tCoord(0,0,1), Color(0.98,0.85,0.6)},
 
-		{tCoord(0,0,1), tCoord(0,10,1), tCoord(0,10,0)},
-		{tCoord(0,0,1), tCoord(0,10,0), tCoord(0,0,0)},
+		{tCoord(0,0,1), tCoord(0,10,1), tCoord(0,10,0), Color(0.98,0.85,0.6)},
+		{tCoord(0,0,1), tCoord(0,10,0), tCoord(0,0,0), Color(0.98,0.85,0.6)},
 
-		{tCoord(0,10,0), tCoord(0,10,1), tCoord(1,10,1)},
-		{tCoord(0,10,0), tCoord(1,10,1), tCoord(1,10,0)},
+		{tCoord(0,10,0), tCoord(0,10,1), tCoord(1,10,1), Color(0.98,0.85,0.6)},
+		{tCoord(0,10,0), tCoord(1,10,1), tCoord(1,10,0), Color(0.98,0.85,0.6)},
 
-		{tCoord(1,0,1), tCoord(0,0,1), tCoord(0,0,0)},
-		{tCoord(1,0,1), tCoord(0,0,0), tCoord(1,0,0)},
+		{tCoord(1,0,1), tCoord(0,0,1), tCoord(0,0,0), Color(0.98,0.85,0.6)},
+		{tCoord(1,0,1), tCoord(0,0,0), tCoord(1,0,0), Color(0.98,0.85,0.6)},
 
         //Second leg
-        {tCoord(5,0,0), tCoord(5,10,0), tCoord(6,10,0)},
-		{tCoord(5,0,0), tCoord(6,10,0), tCoord(6,0,0)},
+        {tCoord(5,0,0), tCoord(5,10,0), tCoord(6,10,0), Color(0.98,0.85,0.6)},
+		{tCoord(5,0,0), tCoord(6,10,0), tCoord(6,0,0), Color(0.98,0.85,0.6)},
 
-		{tCoord(6,0,0), tCoord(6,10,0), tCoord(6,10,1)},
-		{tCoord(6,0,0), tCoord(6,10,1), tCoord(6,0,1)},
+		{tCoord(6,0,0), tCoord(6,10,0), tCoord(6,10,1), Color(0.98,0.85,0.6)},
+		{tCoord(6,0,0), tCoord(6,10,1), tCoord(6,0,1), Color(0.98,0.85,0.6)},
 
-		{tCoord(6,0,1), tCoord(6,10,1), tCoord(5,10,1)},
-		{tCoord(6,0,1), tCoord(5,10,1), tCoord(5,0,1)},
+		{tCoord(6,0,1), tCoord(6,10,1), tCoord(5,10,1), Color(0.98,0.85,0.6)},
+		{tCoord(6,0,1), tCoord(5,10,1), tCoord(5,0,1), Color(0.98,0.85,0.6)},
 
-		{tCoord(5,0,1), tCoord(5,10,1), tCoord(5,10,0)},
-		{tCoord(5,0,1), tCoord(5,10,0), tCoord(5,0,0)},
+		{tCoord(5,0,1), tCoord(5,10,1), tCoord(5,10,0), Color(0.98,0.85,0.6)},
+		{tCoord(5,0,1), tCoord(5,10,0), tCoord(5,0,0), Color(0.98,0.85,0.6)},
 
-		{tCoord(5,10,0), tCoord(5,10,1), tCoord(6,10,1)},
-		{tCoord(5,10,0), tCoord(6,10,1), tCoord(6,10,0)},
+		{tCoord(5,10,0), tCoord(5,10,1), tCoord(6,10,1), Color(0.98,0.85,0.6)},
+		{tCoord(5,10,0), tCoord(6,10,1), tCoord(6,10,0), Color(0.98,0.85,0.6)},
 
-		{tCoord(6,0,1), tCoord(5,0,1), tCoord(5,0,0)},
-		{tCoord(6,0,1), tCoord(5,0,0), tCoord(6,0,0)},
+		{tCoord(6,0,1), tCoord(5,0,1), tCoord(5,0,0), Color(0.98,0.85,0.6)},
+		{tCoord(6,0,1), tCoord(5,0,0), tCoord(6,0,0), Color(0.98,0.85,0.6)},
 
         //Body:
-		{tCoord(-3,10,0), tCoord(8,10,0), tCoord(8,25,0)},
-        {tCoord(-3,10,0), tCoord(-3,25,0), tCoord(8,25,0)}, 
+		{tCoord(-3,10,0), tCoord(8,10,0), tCoord(8,25,0), Color(0.98,0.85,0.6)},
+        {tCoord(-3,10,0), tCoord(-3,25,0), tCoord(8,25,0), Color(0.98,0.85,0.6)}, 
 
         //Neck:
-        {tCoord(2,25,0), tCoord(2,28,0), tCoord(3,28,0)},
-		{tCoord(2,25,0), tCoord(3,28,0), tCoord(3,25,0)},
+        {tCoord(2,25,0), tCoord(2,28,0), tCoord(3,28,0), Color(0.98,0.85,0.6)},
+		{tCoord(2,25,0), tCoord(3,28,0), tCoord(3,25,0), Color(0.98,0.85,0.6)},
 
-		{tCoord(3,25,0), tCoord(3,28,0), tCoord(3,28,1)},
-		{tCoord(3,25,0), tCoord(3,28,1), tCoord(3,25,1)},
+		{tCoord(3,25,0), tCoord(3,28,0), tCoord(3,28,1), Color(0.98,0.85,0.6)},
+		{tCoord(3,25,0), tCoord(3,28,1), tCoord(3,25,1), Color(0.98,0.85,0.6)},
 
-		{tCoord(3,25,1), tCoord(3,28,1), tCoord(2,28,1)},
-		{tCoord(3,25,1), tCoord(2,28,1), tCoord(2,25,1)},
+		{tCoord(3,25,1), tCoord(3,28,1), tCoord(2,28,1), Color(0.98,0.85,0.6)},
+		{tCoord(3,25,1), tCoord(2,28,1), tCoord(2,25,1), Color(0.98,0.85,0.6)},
 
-		{tCoord(2,25,1), tCoord(2,28,1), tCoord(2,28,0)},
-		{tCoord(2,25,1), tCoord(2,28,0), tCoord(2,25,0)},
+		{tCoord(2,25,1), tCoord(2,28,1), tCoord(2,28,0), Color(0.98,0.85,0.6)},
+		{tCoord(2,25,1), tCoord(2,28,0), tCoord(2,25,0), Color(0.98,0.85,0.6)},
 
-		{tCoord(2,28,0), tCoord(2,28,1), tCoord(3,28,1)},
-		{tCoord(2,28,0), tCoord(3,28,1), tCoord(3,28,0)},
+		{tCoord(2,28,0), tCoord(2,28,1), tCoord(3,28,1), Color(0.98,0.85,0.6)},
+		{tCoord(2,28,0), tCoord(3,28,1), tCoord(3,28,0), Color(0.98,0.85,0.6)},
 
-		{tCoord(3,25,1), tCoord(2,25,1), tCoord(2,25,0)},
-		{tCoord(3,25,1), tCoord(2,25,0), tCoord(3,25,0)},
+		{tCoord(3,25,1), tCoord(2,25,1), tCoord(2,25,0), Color(0.98,0.85,0.6)},
+		{tCoord(3,25,1), tCoord(2,25,0), tCoord(3,25,0), Color(0.98,0.85,0.6)},
 
         //GeadL
-        {tCoord(-1,28,0), tCoord(6,28,0), tCoord(6,31,0)},
-        {tCoord(-1,28,0), tCoord(-1,31,0), tCoord(6,31,0)}, 
+        {tCoord(-1,28,0), tCoord(6,28,0), tCoord(6,31,0), Color(0.98,0.85,0.6)},
+        {tCoord(-1,28,0), tCoord(-1,31,0), tCoord(6,31,0), Color(0.98,0.85,0.6)}, 
     };
     DoTranslateMatrix(410,0,0,Human);
-    
+
+    cube Human2 = Human;
+    DoTranslateMatrix(-300,0,1000,Human2);
+
+    cube Tree;
+    Tree.triangles = 
+    {
+        {tCoord(0,0,0), tCoord(0,0,10), tCoord(0,30,0), Color(0.46,0.36,0.28)},
+        {tCoord(0,0,10), tCoord(0,30,0), tCoord(0,30,10), Color(0.46,0.36,0.28)},
+
+        {tCoord(0,0+30,-20), tCoord(0,0+30,30), tCoord(0,30+30,5), Color(0.188,0.73,0)},
+        {tCoord(0,0+30+10,-20), tCoord(0,0+30+10,30), tCoord(0,30+30+10,5), Color(0.188,0.73,0)},
+        {tCoord(0,0+30+20,-20), tCoord(0,0+30+20,30), tCoord(0,30+30+20,5), Color(0.188,0.73,0)},
+        {tCoord(0,0+30+30,-20), tCoord(0,0+30+30,30), tCoord(0,30+30+30,5), Color(0.188,0.73,0)},
+    };
+    DoTranslateMatrix(100,0,250,Tree);
+
+    const int forest_count = 40;
+    cube Forest[forest_count];
+    for (int i = 0; i < forest_count; ++i)
+    {
+        if (i < forest_count/2)
+        {
+            if (i < forest_count/4)
+            {
+                Forest[i] = Tree;
+                DoTranslateMatrix(0,0,(i+1)*60,Forest[i]);
+            }
+            else
+            {
+                Forest[i] = Tree;
+                DoTranslateMatrix(0,0,(i+1)*60+500,Forest[i]);
+            }
+        }
+        else
+        {
+            if (i < (forest_count*3)/4)
+            {
+                Forest[i] = Tree;
+                DoTranslateMatrix(-60,0,(i-forest_count/2)*60,Forest[i]);
+            }
+            else
+            {
+                Forest[i] = Tree;
+                DoTranslateMatrix(-60,0,(i-forest_count/2)*60+500,Forest[i]);
+            }
+        }
+    }
+
     Angel::init(SCREEN_W, SCREEN_H);
 	std::unordered_map<std::string, float> zbuffer;
 
@@ -494,26 +566,34 @@ int main()
         //MAIN BEGINS HERE
         
         //Make temporary copy of the coordinates:
-
+        cube Sun_temp = Sun;
         cube Block1_temp = Block1;
-        cube Block1_windows_temp = Block1_windows;
-        cube Block1_door_temp = Block1_door;
         cube Highway_temp = Highway;
-
         cube Rotating_body1_temp = Rotating_body1;
-        cube Rotating_head1_temp = Rotating_head1;
-        cube Highwaystrips_temp = Highwaystrips;
-
         cube Chair_temp = Chair;
+        cube Chair2_temp = Chair2;
+        cube Chair3_temp = Chair3;
         cube Human_temp = Human;
+        cube Human2_temp = Human2;
+        cube Tree_temp = Tree;
+        cube Block2_temp = Block2;
+        cube Block3_temp = Block3;
+        cube Block4_temp = Block4;
+        cube Forest_temp[forest_count];
+        for (int i = 0; i < forest_count; ++i)
+        {
+            Forest_temp[i] = Forest[i];
+        }
+
         DoTranslateMatrix(0,0,Humanposition, Human_temp);
+        DoTranslateMatrix(0,0,Humanposition+100, Human2_temp);
         Humanposition += direction*100;
-        if (Humanposition > 5000 || Humanposition < 9)
+        if (Humanposition > 2500 || Humanposition < 9)
         {
             direction = (-1)*direction;
         }
 
-		// //lighting
+		//lighting
 
 		// for(auto& tr:Block1.triangles )
 		// {
@@ -521,70 +601,104 @@ int main()
 		// 	Block_Color.push_back(c);
 		// }
 
-
-
         //Make a view matrix:
         tMatrix ourViewMatrix;
         viewMatrix(&ourViewMatrix, &reference, &Nvector, &Vvector);
-
+        DoviewMatrix(&ourViewMatrix, Sun_temp);
         DoviewMatrix(&ourViewMatrix, Block1_temp);
-        DoviewMatrix(&ourViewMatrix, Block1_windows_temp);
-        DoviewMatrix(&ourViewMatrix, Block1_door_temp);
+        DoviewMatrix(&ourViewMatrix, Block2_temp);
         DoviewMatrix(&ourViewMatrix, Highway_temp);
         DoviewMatrix(&ourViewMatrix, Rotating_body1_temp);
-        DoviewMatrix(&ourViewMatrix, Rotating_head1_temp);
-        DoviewMatrix(&ourViewMatrix, Highwaystrips_temp);
         DoviewMatrix(&ourViewMatrix, Chair_temp);
+        DoviewMatrix(&ourViewMatrix, Chair2_temp);
+        DoviewMatrix(&ourViewMatrix, Chair3_temp);
         DoviewMatrix(&ourViewMatrix, Human_temp);
-
+        DoviewMatrix(&ourViewMatrix, Human2_temp);
+        DoviewMatrix(&ourViewMatrix, Tree_temp);
+        DoviewMatrix(&ourViewMatrix, Block3_temp);
+        DoviewMatrix(&ourViewMatrix, Block4_temp);
+        for (int i = 0; i < forest_count; ++i)
+        {
+            DoviewMatrix(&ourViewMatrix, Forest_temp[i]);
+        }
+        DoperspectiveMatrix(&vanishpoint, Sun_temp);
         DoperspectiveMatrix(&vanishpoint, Block1_temp);
-        DoperspectiveMatrix(&vanishpoint, Block1_windows_temp);
-        DoperspectiveMatrix(&vanishpoint, Block1_door_temp);
+        DoperspectiveMatrix(&vanishpoint, Block2_temp);
         DoperspectiveMatrix(&vanishpoint, Highway_temp);
         DoperspectiveMatrix(&vanishpoint, Rotating_body1_temp);
-        DoperspectiveMatrix(&vanishpoint, Rotating_head1_temp);
-        DoperspectiveMatrix(&vanishpoint, Highwaystrips_temp);
         DoperspectiveMatrix(&vanishpoint, Chair_temp);
+        DoperspectiveMatrix(&vanishpoint, Chair2_temp);
+        DoperspectiveMatrix(&vanishpoint, Chair3_temp);
         DoperspectiveMatrix(&vanishpoint, Human_temp);
-
-
+        DoperspectiveMatrix(&vanishpoint, Human2_temp);
+        DoperspectiveMatrix(&vanishpoint, Tree_temp);
+        DoperspectiveMatrix(&vanishpoint, Block3_temp);
+        DoperspectiveMatrix(&vanishpoint, Block4_temp);
+        for (int i = 0; i < forest_count; ++i)
+        {
+            DoperspectiveMatrix(&vanishpoint, Forest_temp[i]);
+        }
 		//int n = 0;
+	    for(auto& tr:Sun_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
+		}		
 	    for(auto& tr:Block1_temp.triangles)
 		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 0.0f, 0.0f));
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
 		}		
-        for(auto& tr:Block1_windows_temp.triangles)
+	    for(auto& tr:Block2_temp.triangles)
 		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 1.0f, 0.0f));
-		}	
-		for(auto& tr:Block1_door_temp.triangles)
-		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 1.0f, 0.0f));
-        }
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
+		}		
 		for(auto& tr:Highway_temp.triangles)
 		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(0.36f, 0.32f, 0.25f));
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
 		}
 		for(auto& tr:Rotating_body1_temp.triangles)
 		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(0.0f, 1.0f, 0.0f));
-		}
-		for(auto& tr:Rotating_head1_temp.triangles)
-		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 0.0f, 0.0f));
-		}
-		for(auto& tr:Highwaystrips_temp.triangles)
-		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 1.0f, 1.0f));
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
 		}
 		for(auto& tr:Chair_temp.triangles)
 		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(0.88f, 0.71f, 0.50f));
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
+		}
+		for(auto& tr:Chair2_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
+		}
+		for(auto& tr:Chair3_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
 		}
 		for(auto& tr:Human_temp.triangles)
 		{
-			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, Color(1.0f, 0.8f, 0.60f));
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
 		}
+		for(auto& tr:Human2_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
+		}
+		for(auto& tr:Tree_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
+		}
+		for(auto& tr:Block3_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
+		}
+		for(auto& tr:Block4_temp.triangles)
+		{
+			RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
+		}
+        for (int i = 0; i < forest_count; ++i)
+        {
+            for(auto& tr:Forest_temp[i].triangles)
+            {
+                RasterizeTriangle(tr.tri[0], tr.tri[1], tr.tri[2], zbuffer, tr.color);
+            }
+        }
+
 		//clear all the conatiners
         zbuffer.erase(zbuffer.begin(),zbuffer.end());
 		Block_Color.clear();
@@ -614,27 +728,27 @@ void processInput(GLFWwindow *window)
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        reference.z += 5;
+        reference.z += 15;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        reference.z -= 5;
+        reference.z -= 15;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        reference.x += 5;
+        reference.x += 15;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        reference.x -= 5;
+        reference.x -= 15;
     }
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
     {
-        reference.y += 5;
+        reference.y += 15;
     }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     {
-        reference.y -= 5;
+        reference.y -= 15;
     }
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
     {
@@ -643,7 +757,6 @@ void processInput(GLFWwindow *window)
         {
             angle += 0.05;
         }           
-        std::cout << angle << std::endl;
         Nvector.z = cos(angle)*cos(angle);
         Nvector.x = sin(angle)*sin(angle);
     }
@@ -655,42 +768,18 @@ void processInput(GLFWwindow *window)
             angle -= 0.1;
 
         }
-        std::cout << angle << std::endl;
         Nvector.z = cos(angle)*cos(angle);
         Nvector.x = sin(angle)*sin(angle);
     }
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        reference.x = default_x;
+        reference.y = default_y;
+        reference.z = default_z;
+
+        Nvector.x = default_xx;
+        Nvector.y = default_yy;
+        Nvector.z = default_zz;
+    }
+
 }
-
-/*
-What just happened?
-
->Initialze the GLFW
->Create an window object
->Make it current context
->Initialize GLAD
->Register the traceback functions
-
->Create the vertex shader expecting position attribute at some location and fragment shaders delivering the output own its own
->Compile them
->Link them into a shader program
-
->Initialize the vertices
->Create VBO(s) to store the vertices and VAO(s) to supply them
->Bind VAO(s) followed by VBO(s)
->Copy the vertices into VBO(s)
->Tell OpenGL how we to interpret the data on current buffer when it enters the vertex shader
-......
-
->Unbind VBO and VAO (optional)
-
->Create an rendering loop:
-    >Input functionalities
-    >Clear screen
-
-    >Activate the shader program
-    >Bind the VAO
-    >Draw the triangle
-
-    >Swap buffers
-    >Communicate with window system (define tracebacks)
-*/
