@@ -2,7 +2,7 @@
 #define THREE_INCLUDED
 
 #include<bits/stdc++.h>
-
+#include "Angel.hpp"
 #include "twoDtransformations.hpp"
 class tCoord
 {
@@ -27,6 +27,7 @@ class tCoord
 struct triangle 
 {
 	tCoord tri[3];
+    Color color;
 };
 
 struct cube
