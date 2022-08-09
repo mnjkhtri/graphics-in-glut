@@ -193,6 +193,11 @@ void Square(Coord first, Coord second, Coord third, Coord forth)
 // draw triangle and fill accordingly
 void RasterizeTriangle(tCoord vertices1, tCoord vertices2, tCoord vertices3,std::unordered_map<std::string,float>& zbuffer,Color co)
 	{
+		// not recommended but doing it anyways
+		float height = 1000.0f;
+		float width = 2000.0f;
+
+
 		int x1 = vertices1.x, y1=vertices1.y;
 		int x2 = vertices2.x, y2 = vertices2.y;
 		int x3 = vertices3.x, y3 = vertices3.y;
@@ -214,12 +219,25 @@ void RasterizeTriangle(tCoord vertices1, tCoord vertices2, tCoord vertices3,std:
 		auto SWAP = [](int &x, int &y) { int t = x; x = y; y = t; };
 		auto drawline = [&](int sx, int ex, int ny) 
 		{ 
+			//point clipping
+			if(ny > height || ny < 0) 
+				return ;
+
+			if((sx<0 && ex < 0 )|| (sx>width && ex>width))
+				return ;
+
+			if (ex > width)
+				ex = width;
+			if(sx < 0)
+				sx = 0;
+
+
 			for (int i = sx; i <= ex; i++) 
 			{
 				//finding out z for the surface ax+by+cz+d = 0
 				float z = (d - normal.x * i - normal.y *  ny)/normal.z;
 
-				std::string key = std::to_string(i) +"-"+std::to_string(ny);
+				std::string key = std::to_string(i) +"+"+std::to_string(ny);
 
 				//in case key is not found in the buffer we 
 				if(zbuffer.find(key) == zbuffer.end())

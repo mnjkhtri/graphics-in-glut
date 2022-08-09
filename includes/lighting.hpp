@@ -21,7 +21,8 @@ struct Light
 	tCoord specular;
 };
 
-tCoord Dolighting(Material material,Light light,triangle& tr,tCoord cameraPosition);
+void light(triangle& tr,tCoord cameraPosition,tCoord lightPosition );
+void Dolighting(cube& mesh, tCoord cameraPosition, tCoord lightPosition);
 
 
 

@@ -17,24 +17,12 @@ int default_xx = 0;
 int default_yy = 0;
 int default_zz = 1;
 
+tCoord lightPosition = tCoord(800,500,0);
 float angle = 0;
 tCoord reference(200,0,-10);
 tCoord Nvector(0,0,1);
 tCoord Vvector(0,1,0);
 tCoord vanishpoint(500,300,-1000);
-
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(0.5f, 0.5f, 0.5f, 1.0f);\n"
-    "}\n\0";
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -60,55 +48,6 @@ int main()
     }
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    //Attach the source code to it
-    glShaderSource(vertexShader,1,&vertexShaderSource,NULL);
-    //Compile it
-    glCompileShader(vertexShader);
-
-    //Check for compilation errors:
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n",infoLog);
-    }
-
-    //Create a fragment shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    //Attach the source code to it
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    //Compile it
-    glCompileShader(fragmentShader);
-
-    //Check for shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n",infoLog);
-    }
-
-    //Combine shaders to link the inputs and outputs of one another
-    unsigned int shaderProgram = glCreateProgram();
-    //Attach the vertex shader
-    glAttachShader(shaderProgram, vertexShader);
-    //Attach the fragement shader
-    glAttachShader(shaderProgram, fragmentShader);
-    //Link them
-    glLinkProgram(shaderProgram);
-    
-    //Check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        printf("ERROR::SHADER::PROGRAM::LINKING_FAILED\n%s\n",infoLog);
-    }
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
     cube Sun;
     Sun.triangles = 
     {
@@ -127,7 +66,7 @@ int main()
 		{tCoord(10,0,10), tCoord(0,0,10), tCoord(0,0,0), Color(1,1,1)},
 		{tCoord(10,0,10), tCoord(0,0,0), tCoord(10,0,0), Color(1,1,1)},
     };
-    DoTranslateMatrix(800,500,0,Sun);
+    DoTranslateMatrix(lightPosition.x,lightPosition.y,lightPosition.z,Sun);
 
 	cube Block1;
     Block1.triangles= 
@@ -528,12 +467,12 @@ int main()
             if (i < (forest_count*3)/4)
             {
                 Forest[i] = Tree;
-                DoTranslateMatrix(-60,0,(i-forest_count/2)*60,Forest[i]);
+                DoTranslateMatrix(-60,0,(i-forest_count/2.0f)*60,Forest[i]);
             }
             else
             {
                 Forest[i] = Tree;
-                DoTranslateMatrix(-60,0,(i-forest_count/2)*60+500,Forest[i]);
+                DoTranslateMatrix(-60,0,(i-forest_count/2.0f)*60+500,Forest[i]);
             }
         }
     }
@@ -543,20 +482,6 @@ int main()
 
     int Humanposition = 0;
     int direction = 1;
-
-	Material material;
-	material.ambient = tCoord(0.65f, 0.00f, 0.0f);
-	material.diffuse = tCoord(0.5f, 0.0f, 0.0f);
-	material.specular = tCoord(0.7f, 0.04f, 0.04f);
-	material.shininess = 0.078125;
-
-	Light light;
-	light.position = tCoord(300.0f,150.0f,50.0f);
-	light.ambient = tCoord(0.2f, 0.2f, 0.2f);
-	light.diffuse = tCoord(1.0f, 1.0f, 1.0f);
-	light.specular = tCoord(1.0f, 1.0f, 1.0f);
-
-	std::vector<tCoord> Block_Color;
     while (!glfwWindowShouldClose(window)) 
     {
         processInput(window);
@@ -595,12 +520,25 @@ int main()
 
 		//lighting
 
-		// for(auto& tr:Block1.triangles )
-		// {
-		// 	tCoord c = Dolighting(material, light, tr, reference);
-		// 	Block_Color.push_back(c);
-		// }
+		Dolighting(Block1_temp, reference, lightPosition);
+		Dolighting(Block2_temp, reference, lightPosition);
+	//	Dolighting(Highway_temp, reference, lightPosition);
+		Dolighting(Rotating_body1_temp, reference, lightPosition);
+		Dolighting(Chair_temp, reference, lightPosition);
+		Dolighting(Chair2_temp, reference, lightPosition);
+		Dolighting(Chair3_temp, reference, lightPosition);
+		Dolighting(Human_temp, reference, lightPosition);
+		Dolighting(Human2_temp, reference, lightPosition);
+		Dolighting(Tree_temp, reference, lightPosition);
+		Dolighting(Block3_temp, reference, lightPosition);
+		Dolighting(Block4_temp, reference, lightPosition);
+		for (int i = 0; i < forest_count; ++i)
+        {
+            Dolighting(Forest_temp[i], reference, lightPosition);
+        }
 
+
+	
         //Make a view matrix:
         tMatrix ourViewMatrix;
         viewMatrix(&ourViewMatrix, &reference, &Nvector, &Vvector);
@@ -701,7 +639,6 @@ int main()
 
 		//clear all the conatiners
         zbuffer.erase(zbuffer.begin(),zbuffer.end());
-		Block_Color.clear();
 
 
     //MAIN ENDS HERE
@@ -710,8 +647,6 @@ int main()
         glfwPollEvents();
     }
 
-    //Free the allocated resources
-    glDeleteProgram(shaderProgram);
 
     glfwTerminate();
     return 0;
